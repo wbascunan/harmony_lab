@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- ============================================================
+       HARMONY LAB — index.html
+       Sitio web completo: presets de pedaleras + clases de música
+       ============================================================ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO básico -->
+  <title>Harmony Lab | Presets Profesionales & Clases de Música</title>
+  <meta name="description" content="Harmony Lab ofrece presets profesionales para pedaleras y clases de guitarra, bajo, piano, batería y canto. Presencial en Cuenca y Guayaquil, online al resto del mundo." />
+  <meta name="keywords" content="presets guitarra, Pod Go presets, Helix presets, HX Stomp, clases guitarra online, clases piano, Harmony Lab" />
+  <meta name="author" content="Harmony Lab" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Harmony Lab | Presets Profesionales & Clases de Música" />
+  <meta property="og:description" content="Presets para pedaleras multiefectos y clases de música online y presenciales." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.harmonylab.com" />
+  <meta property="og:image" content="assets/images/logo.png" />
+
+  <!-- Favicon & logo -->
+  <link rel="icon" type="image/png" href="assets/images/logo.png" />
+  <link rel="apple-touch-icon" href="assets/images/logo.png" />
+
+  <!-- Fuentes: Poppins + Montserrat (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome (iconos) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- CSS principal -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- =====================================================
+       NAVBAR
+       ===================================================== -->
+  <header class="navbar" id="navbar" role="banner">
+    <div class="nav-container">
+
+      <!-- Logo -->
+      <a href="#hero" class="nav-logo" aria-label="Harmony Lab — Inicio">
+        <img
+          src="assets/images/logo.png"
+          alt="Harmony Lab — Academia de Música"
+          class="logo-img logo-img--nav"
+          data-logo
+          width="44"
+          height="44"
+          loading="eager"
+        />
+      </a>
+
+      <!-- Menú de navegación (desktop) -->
+      <nav class="nav-menu" id="nav-menu" role="navigation" aria-label="Menú principal">
+        <ul class="nav-list">
+          <li><a href="#presets"  class="nav-link">Presets</a></li>
+          <li><a href="#classes"  class="nav-link">Clases</a></li>
+          <li><a href="#testimonials" class="nav-link">Testimonios</a></li>
+          <li><a href="#faq"      class="nav-link">FAQ</a></li>
+          <li><a href="#about"    class="nav-link">Nosotros</a></li>
+          <li><a href="#contact"  class="nav-link nav-link--cta">Contacto</a></li>
+        </ul>
+      </nav>
+
+      <!-- Botón hamburguesa (móvil) -->
+      <button class="nav-toggle" id="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-menu">
+        <span class="hamburger"></span>
+        <span class="hamburger"></span>
+        <span class="hamburger"></span>
+      </button>
+
+    </div>
+  </header>
+  <!-- /NAVBAR -->
+
+
+  <main>
+
+    <!-- =====================================================
+         HERO SECTION
+         ===================================================== -->
+    <section class="hero" id="hero" aria-label="Bienvenida">
+
+      <!-- Fondo con partículas/efectos visuales -->
+      <div class="hero-bg" aria-hidden="true">
+        <div class="hero-grid"></div>
+        <div class="hero-glow hero-glow--1"></div>
+        <div class="hero-glow hero-glow--2"></div>
+      </div>
+
+      <div class="container hero-content">
+
+        <!-- Título principal -->
+        <h1 class="hero-title animate-fade-up animate-delay-1">
+          <span class="hero-title__main">Harmony</span>
+          <span class="hero-title__accent">Lab</span>
+        </h1>
+
+        <!-- Subtítulo -->
+        <p class="hero-subtitle animate-fade-up animate-delay-2">
+          Presets profesionales y formación musical para llevar<br class="hero-br" />
+          tu sonido al siguiente nivel.
+        </p>
+
+        <!-- Botones CTA -->
+        <div class="hero-actions animate-fade-up animate-delay-3">
+          <a href="#presets" class="btn btn--primary">
+            <i class="fas fa-sliders"></i>
+            Ver Presets
+          </a>
+          <a href="#classes" class="btn btn--outline">
+            <i class="fas fa-graduation-cap"></i>
+            Clases de Música
+          </a>
+        </div>
+
+        <!-- Stats rápidos -->
+        <div class="hero-stats animate-fade-up animate-delay-4">
+          <div class="stat">
+            <span class="stat__number">200+</span>
+            <span class="stat__label">Presets vendidos</span>
+          </div>
+
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat">
+            <span class="stat__number">50+</span>
+            <span class="stat__label">Alumnos activos</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Indicador scroll -->
+      <a href="#about" class="hero-scroll" aria-label="Ir a la siguiente sección">
+        <span class="scroll-dot"></span>
+      </a>
+
+    </section>
+    <!-- /HERO -->
+
+
+    <!-- =====================================================
+         CATÁLOGO DE PRESETS
+         ===================================================== -->
+    <section class="presets section section--dark" id="presets" aria-labelledby="presets-heading">
+      <div class="container">
+
+        <div class="section-header scroll-reveal">
+          <span class="section-eyebrow">Tienda</span>
+          <h2 class="section-title" id="presets-heading">
+            Catálogo de <span class="text-accent">Presets</span>
+          </h2>
+          <p class="section-subtitle">
+            Tones profesionales listos para usar en tu pedalera. Entrega digital inmediata.
+          </p>
+        </div>
+
+        <!-- Filtros por plataforma (generados desde config.js) -->
+        <div class="preset-filters scroll-reveal" id="preset-filters" role="group" aria-label="Filtrar por plataforma">
+          <!-- Renderizado dinámicamente -->
+        </div>
+
+        <!-- Grid de productos (generado desde config.js) -->
+        <div class="presets-grid" id="presets-grid" aria-live="polite">
+          <!-- Renderizado dinámicamente -->
+        </div>
+        <!-- /presets-grid -->
+
+        <!-- Nota sobre entrega digital -->
+        <div class="presets-note scroll-reveal">
+          <i class="fas fa-info-circle"></i>
+          <span>Contáctanos por WhatsApp para comprar o consultar. Entrega digital tras confirmar tu pedido.</span>
+        </div>
+
+      </div>
+    </section>
+    <!-- /PRESETS -->
+
+
+    <!-- =====================================================
+         SECCIÓN DE CLASES
+         ===================================================== -->
+    <section class="classes section" id="classes" aria-labelledby="classes-heading">
+      <div class="container">
+
+        <div class="section-header scroll-reveal">
+          <span class="section-eyebrow">Formación</span>
+          <h2 class="section-title" id="classes-heading">
+            Clases de <span class="text-accent">Música</span>
+          </h2>
+          <p class="section-subtitle" id="classes-subtitle">
+            Presencial en Cuenca y Guayaquil. Online al resto del mundo. Todos los niveles.
+          </p>
+        </div>
+
+        <div class="classes-locations scroll-reveal" id="classes-locations" aria-label="Modalidades y ubicaciones">
+          <!-- Renderizado desde config.js -->
+        </div>
+
+        <div class="classes-grid" id="classes-grid" aria-live="polite">
+          <!-- Renderizado desde config.js -->
+        </div>
+        <!-- /classes-grid -->
+
+      </div>
+    </section>
+    <!-- /CLASSES -->
+
+
+    <!-- =====================================================
+         TESTIMONIOS
+         ===================================================== -->
+    <section class="testimonials section section--dark" id="testimonials" aria-labelledby="testimonials-heading">
+      <div class="container">
+
+        <div class="section-header scroll-reveal">
+          <span class="section-eyebrow">Opiniones</span>
+          <h2 class="section-title" id="testimonials-heading">
+            Lo que dicen nuestros <span class="text-accent">músicos</span>
+          </h2>
+        </div>
+
+        <div class="testimonials-grid">
+
+          <!-- Testimonio 1 -->
+          <blockquote class="testimonial-card scroll-reveal">
+            <div class="testimonial-stars" aria-label="5 estrellas">
+              <i class="fas fa-star"></i><i class="fas fa-star"></i>
+              <i class="fas fa-star"></i><i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+            <p class="testimonial-text">
+              "El Modern Metal Pack para Pod Go cambió completamente mi sonido en vivo.
+              Subí al escenario y el sonido era brutal y definido. Mis compañeros de banda
+              no podían creer que viniera de una pedalera."
+            </p>
+            <footer class="testimonial-author">
+              <div class="author-avatar" aria-hidden="true">
+                <span>CR</span>
+              </div>
+              <div>
+                <cite class="author-name">Carlos R.</cite>
+                <span class="author-role">Guitarrista — Banda de Metalcore</span>
+              </div>
+            </footer>
+          </blockquote>
+
+          <!-- Testimonio 2 -->
+          <blockquote class="testimonial-card scroll-reveal scroll-reveal--delay-1">
+            <div class="testimonial-stars" aria-label="5 estrellas">
+              <i class="fas fa-star"></i><i class="fas fa-star"></i>
+              <i class="fas fa-star"></i><i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+            <p class="testimonial-text">
+              "Llevo 3 meses con clases de guitarra online con Harmony Lab y el avance
+              ha sido enorme. Las clases son claras, los materiales excelentes y siempre
+              hay respuesta rápida a mis dudas. 100% recomendado."
+            </p>
+            <footer class="testimonial-author">
+              <div class="author-avatar" aria-hidden="true">
+                <span>MP</span>
+              </div>
+              <div>
+                <cite class="author-name">Mariana P.</cite>
+                <span class="author-role">Alumna de Guitarra</span>
+              </div>
+            </footer>
+          </blockquote>
+
+          <!-- Testimonio 3 -->
+          <blockquote class="testimonial-card scroll-reveal scroll-reveal--delay-2">
+            <div class="testimonial-stars" aria-label="5 estrellas">
+              <i class="fas fa-star"></i><i class="fas fa-star"></i>
+              <i class="fas fa-star"></i><i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+            <p class="testimonial-text">
+              "Compré el HX Stomp Studio Pack para una sesión de grabación y el ingeniero
+              de sonido quedó impresionado. Muy fácil de instalar y el soporte de Harmony
+              Lab fue impecable cuando tuve dudas técnicas."
+            </p>
+            <footer class="testimonial-author">
+              <div class="author-avatar" aria-hidden="true">
+                <span>AL</span>
+              </div>
+              <div>
+                <cite class="author-name">Andrés L.</cite>
+                <span class="author-role">Músico de sesión</span>
+              </div>
+            </footer>
+          </blockquote>
+
+        </div>
+
+      </div>
+    </section>
+    <!-- /TESTIMONIALS -->
+
+
+    <!-- =====================================================
+         FAQ
+         ===================================================== -->
+    <section class="faq section" id="faq" aria-labelledby="faq-heading">
+      <div class="container faq-container">
+
+        <div class="section-header scroll-reveal">
+          <span class="section-eyebrow">Soporte</span>
+          <h2 class="section-title" id="faq-heading">
+            Preguntas <span class="text-accent">frecuentes</span>
+          </h2>
+        </div>
+
+        <div class="faq-list scroll-reveal" role="list">
+
+          <!-- Pregunta 1 -->
+          <div class="faq-item" role="listitem">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-1">
+              <span>¿Cómo recibo los presets después de comprar?</span>
+              <span class="faq-icon" aria-hidden="true"><i class="fas fa-plus"></i></span>
+            </button>
+            <div class="faq-answer" id="faq-answer-1" role="region" hidden>
+              <p>
+                Una vez confirmado el pago a través de PayPal, recibirás un correo electrónico
+                en un máximo de 24 horas con el archivo de presets y las instrucciones detalladas
+                de instalación para tu plataforma específica. Guardamos un registro de todos los
+                pedidos, así que si no recibes el correo, escríbenos y lo solucionamos de inmediato.
+              </p>
+            </div>
+          </div>
+
+          <!-- Pregunta 2 -->
+          <div class="faq-item" role="listitem">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-2">
+              <span>¿Qué métodos de pago aceptan?</span>
+              <span class="faq-icon" aria-hidden="true"><i class="fas fa-plus"></i></span>
+            </button>
+            <div class="faq-answer" id="faq-answer-2" role="region" hidden>
+              <p>
+                Aceptamos pagos exclusivamente a través de <strong>PayPal</strong>, que te permite
+                pagar con tu saldo de PayPal, tarjeta de crédito o débito de forma segura. No
+                almacenamos ningún dato bancario en nuestro sistema.
+              </p>
+            </div>
+          </div>
+
+          <!-- Pregunta 3 -->
+          <div class="faq-item" role="listitem">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-3">
+              <span>¿Las clases son online o presenciales?</span>
+              <span class="faq-icon" aria-hidden="true"><i class="fas fa-plus"></i></span>
+            </button>
+            <div class="faq-answer" id="faq-answer-3" role="region" hidden>
+              <p>
+                Ofrecemos clases <strong>presenciales en Cuenca y Guayaquil</strong>, y clases
+                <strong>100% online</strong> via Zoom o Google Meet para el resto del mundo.
+                Contáctanos por WhatsApp para coordinar horarios y modalidad según tu ubicación.
+              </p>
+            </div>
+          </div>
+
+          <!-- Pregunta 4 -->
+          <div class="faq-item" role="listitem">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-4">
+              <span>¿Necesito experiencia previa para tomar clases?</span>
+              <span class="faq-icon" aria-hidden="true"><i class="fas fa-plus"></i></span>
+            </button>
+            <div class="faq-answer" id="faq-answer-4" role="region" hidden>
+              <p>
+                No, absolutamente no. Aceptamos alumnos de <strong>todos los niveles</strong>,
+                desde personas que nunca han tocado un instrumento hasta músicos con experiencia
+                que buscan mejorar técnicas específicas o explorar nuevos estilos. La primera
+                clase incluye una evaluación gratuita para personalizar tu plan de aprendizaje.
+              </p>
+            </div>
+          </div>
+
+          <!-- Pregunta 5 (bonus) -->
+          <div class="faq-item" role="listitem">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-5">
+              <span>¿Los presets funcionan con cualquier guitarra?</span>
+              <span class="faq-icon" aria-hidden="true"><i class="fas fa-plus"></i></span>
+            </button>
+            <div class="faq-answer" id="faq-answer-5" role="region" hidden>
+              <p>
+                Los presets están diseñados para funcionar bien con la mayoría de guitarras
+                eléctricas estándar. Sin embargo, el timbre final puede variar dependiendo de
+                tus pastillas, madera y configuración. Incluimos en cada pack una guía de ajuste
+                básico para que puedas optimizar el sonido a tu instrumento.
+              </p>
+            </div>
+          </div>
+
+        </div>
+        <!-- /faq-list -->
+
+      </div>
+    </section>
+    <!-- /FAQ -->
+
+<!-- =====================================================
+         SOBRE NOSOTROS
+         ===================================================== -->
+    <section class="about section" id="about" aria-labelledby="about-heading">
+      <div class="container">
+
+        <div class="about-grid">
+
+          <!-- Columna de texto -->
+          <div class="about-text scroll-reveal">
+            <span class="section-eyebrow">Quiénes somos</span>
+            <h2 class="section-title" id="about-heading">
+              Sonido profesional,<br /><span class="text-accent">sin límites</span>
+            </h2>
+            <p class="about-lead">
+              Harmony Lab combina experiencia musical y tecnología para ofrecer presets profesionales
+              y formación personalizada para músicos de todos los niveles.
+            </p>
+            <p class="about-body">
+              Nacimos de la pasión por el buen tono. Cada preset que diseñamos pasa por horas de
+              refinamiento en estudio, pensado para que suenes increíble desde el primer momento —
+              en ensayo, en escena o en grabación.
+            </p>
+
+            <!-- Características destacadas -->
+            <ul class="about-features" aria-label="Características principales">
+              <li class="about-feature">
+                <span class="feature-icon"><i class="fas fa-check-circle"></i></span>
+                <div>
+                  <strong>Presets diseñados en estudio</strong>
+                  <p>Cada tono creado y validado por músicos profesionales.</p>
+                </div>
+              </li>
+              <li class="about-feature">
+                <span class="feature-icon"><i class="fas fa-check-circle"></i></span>
+                <div>
+                  <strong>Clases adaptadas a tu nivel</strong>
+                  <p>Desde principiante hasta avanzado, a tu ritmo.</p>
+                </div>
+              </li>
+              <li class="about-feature">
+                <span class="feature-icon"><i class="fas fa-check-circle"></i></span>
+                <div>
+                  <strong>Soporte post-compra</strong>
+                  <p>Te ayudamos a cargar y ajustar tus presets.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Columna visual -->
+          <div class="about-visual scroll-reveal scroll-reveal--right">
+            <img
+              src="assets/images/logo.png"
+              alt="Harmony Lab — Academia de Música"
+              class="logo-img logo-img--about"
+              data-logo
+              width="320"
+              height="320"
+              loading="lazy"
+            />
+          </div>
+
+        </div>
+      </div>
+    </section>
+    <!-- /ABOUT -->
+
+    <!-- =====================================================
+         CONTACTO
+         ===================================================== -->
+    <section class="contact section section--dark" id="contact" aria-labelledby="contact-heading">
+      <div class="container">
+
+        <div class="section-header scroll-reveal">
+          <span class="section-eyebrow">Hablemos</span>
+          <h2 class="section-title" id="contact-heading">
+            Ponerte en <span class="text-accent">contacto</span>
+          </h2>
+          <p class="section-subtitle">
+            ¿Dudas sobre presets o clases? Escríbenos y te respondemos por WhatsApp.
+          </p>
+        </div>
+
+        <div class="contact-grid">
+
+          <!-- Formulario de contacto -->
+          <div class="contact-form-wrap scroll-reveal">
+            <form class="contact-form" id="contact-form" novalidate aria-label="Formulario de contacto">
+
+              <div class="form-group">
+                <label for="contact-name" class="form-label">Nombre completo</label>
+                <input
+                  type="text"
+                  id="contact-name"
+                  name="name"
+                  class="form-input"
+                  placeholder="Tu nombre"
+                  autocomplete="name"
+                  required
+                  aria-required="true"
+                />
+                <span class="form-error" id="error-name" role="alert" aria-live="polite"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="contact-email" class="form-label">Correo o teléfono <span class="form-label-optional">(opcional)</span></label>
+                <input
+                  type="text"
+                  id="contact-email"
+                  name="contact"
+                  class="form-input"
+                  placeholder="Para que podamos responderte"
+                  autocomplete="email"
+                />
+                <span class="form-error" id="error-email" role="alert" aria-live="polite"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="contact-message" class="form-label">Mensaje</label>
+                <textarea
+                  id="contact-message"
+                  name="message"
+                  class="form-input form-textarea"
+                  placeholder="¿En qué podemos ayudarte?"
+                  rows="5"
+                  required
+                  aria-required="true"
+                ></textarea>
+                <span class="form-error" id="error-message" role="alert" aria-live="polite"></span>
+              </div>
+
+              <button type="submit" class="btn btn--whatsapp btn--full" id="form-submit">
+                <i class="fab fa-whatsapp"></i>
+                <span>Enviar por WhatsApp</span>
+              </button>
+
+              <!-- Mensaje de éxito -->
+              <div class="form-success" id="form-success" role="status" aria-live="polite" hidden>
+                <i class="fas fa-check-circle"></i>
+                <span>¡Listo! Completa el envío en WhatsApp.</span>
+              </div>
+
+            </form>
+          </div>
+
+          <!-- Info de contacto + redes -->
+          <div class="contact-info scroll-reveal scroll-reveal--right">
+
+            <h3 class="contact-info__title">Encuéntranos en</h3>
+
+            <!-- Redes sociales -->
+            <div class="social-links" aria-label="Redes sociales">
+
+              <a href="https://wa.me/593998116150" class="social-link social-link--whatsapp" data-wa-link
+                 target="_blank" rel="noopener noreferrer" aria-label="WhatsApp de Harmony Lab">
+                <span class="social-icon"><i class="fab fa-whatsapp"></i></span>
+                <div class="social-text">
+                  <span class="social-name">WhatsApp</span>
+                  <span class="social-handle" data-wa-display>+593 99 811 6150</span>
+                </div>
+              </a>
+
+              <a href="https://www.instagram.com/harmonylab.ec/" class="social-link social-link--instagram" data-ig-link
+                 target="_blank" rel="noopener noreferrer" aria-label="Instagram de Harmony Lab">
+                <span class="social-icon"><i class="fab fa-instagram"></i></span>
+                <div class="social-text">
+                  <span class="social-name">Instagram</span>
+                  <span class="social-handle" data-ig-handle>@harmonylab.ec</span>
+                </div>
+              </a>
+
+            </div>
+            <!-- /social-links -->
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+    <!-- /CONTACT -->
+
+  </main>
+
+
+  <!-- =====================================================
+       FOOTER
+       ===================================================== -->
+  <footer class="footer" role="contentinfo">
+    <div class="container footer-inner">
+
+      <!-- Logo y descripción -->
+      <div class="footer-brand">
+        <a href="#hero" class="nav-logo footer-logo" aria-label="Harmony Lab inicio">
+          <img
+            src="assets/images/logo.png"
+            alt="Harmony Lab — Academia de Música"
+            class="logo-img logo-img--footer"
+            data-logo
+            width="120"
+            height="120"
+            loading="lazy"
+          />
+        </a>
+        <p class="footer-tagline" id="footer-tagline">
+          Presets profesionales y formación musical para llevarte al siguiente nivel.
+        </p>
+      </div>
+
+      <!-- Links rápidos -->
+      <nav class="footer-nav" aria-label="Links rápidos del footer">
+        <h4 class="footer-nav__title">Navegación</h4>
+        <ul class="footer-nav__list">
+          <li><a href="#about">Nosotros</a></li>
+          <li><a href="#presets">Presets</a></li>
+          <li><a href="#classes">Clases</a></li>
+          <li><a href="#testimonials">Testimonios</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#contact">Contacto</a></li>
+        </ul>
+      </nav>
+
+      <!-- Productos -->
+      <nav class="footer-nav" aria-label="Productos en el footer">
+        <h4 class="footer-nav__title">Plataformas</h4>
+        <ul class="footer-nav__list" id="footer-platforms">
+          <li><a href="#presets">Pod Go</a></li>
+          <li><a href="#presets">Zoom</a></li>
+          <li><a href="#presets">Headrush</a></li>
+          <li><a href="#presets">Helix Stadium</a></li>
+          <li><a href="#presets">Helix LT / Floor / Native / Rack</a></li>
+        </ul>
+      </nav>
+
+      <!-- Redes sociales footer -->
+      <div class="footer-social">
+        <h4 class="footer-nav__title">Síguenos</h4>
+        <div class="footer-social__icons" aria-label="Redes sociales">
+          <a href="https://wa.me/593998116150" data-wa-link target="_blank" rel="noopener noreferrer"
+             class="footer-social__link" aria-label="WhatsApp">
+            <i class="fab fa-whatsapp"></i>
+          </a>
+          <a href="https://www.instagram.com/harmonylab.ec/" data-ig-link target="_blank" rel="noopener noreferrer"
+             class="footer-social__link" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Barra inferior del footer -->
+    <div class="footer-bottom">
+      <div class="container footer-bottom__inner">
+        <p class="footer-copy">
+          &copy; <span id="footer-year"></span> Harmony Lab. Todos los derechos reservados.
+        </p>
+        <p class="footer-legal">
+          Diseñado con <i class="fas fa-heart" style="color:#FF8300" aria-hidden="true"></i> para músicos
+        </p>
+      </div>
+    </div>
+
+  </footer>
+  <!-- /FOOTER -->
+
+
+  <!-- =====================================================
+       BOTÓN VOLVER ARRIBA
+       ===================================================== -->
+  <button class="back-to-top" id="back-to-top" aria-label="Volver al inicio" hidden>
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <!-- =====================================================
+       MODAL DETALLE DE PRODUCTO
+       ===================================================== -->
+  <div class="modal-overlay" id="product-modal" role="dialog" aria-modal="true" aria-labelledby="product-modal-title" hidden>
+    <div class="modal modal--product">
+      <button class="modal-close" id="product-modal-close" aria-label="Cerrar detalle del producto">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="modal-product__inner" id="product-modal-content">
+        <!-- Contenido generado dinámicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Configuración central + JavaScript principal -->
+  <script src="js/config.js"></script>
+  <script src="js/script.js"></script>
+
+</body>
+</html>
