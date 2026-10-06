@@ -21,10 +21,6 @@ service cloud.firestore {
       return v == null || (v is string && v.size() <= maxLen);
     }
 
-    function isStringList(v, maxItems, maxItemLen) {
-      return v is list && v.size() <= maxItems;
-    }
-
     function validSlug(s) {
       return s is string
         && s.size() >= 2
@@ -44,13 +40,6 @@ service cloud.firestore {
           || u.matches('^assets/.*')
           || u.matches('^/.*')
         ));
-    }
-
-    function validFeature(f) {
-      return f is map
-        && f.keys().hasOnly(['icon', 'label'])
-        && f.icon is string && f.icon.size() <= 60
-        && f.label is string && f.label.size() <= 80;
     }
 
     function validFeatures(list) {
@@ -103,10 +92,69 @@ service cloud.firestore {
         && d.updatedAt is timestamp;
     }
 
+    function siteSettingsValid() {
+      let d = request.resource.data;
+      return d.keys().hasOnly([
+          'whatsappNumber', 'whatsappDisplay', 'brandName',
+          'whatsappBuyTemplate', 'whatsappConsultTemplate', 'whatsappClassTemplate',
+          'classesSubtitle', 'presencialCities', 'onlineLabel',
+          'updatedAt'
+        ])
+        && isNonEmptyString(d.whatsappNumber, 20)
+        && isNonEmptyString(d.whatsappDisplay, 40)
+        && isNonEmptyString(d.brandName, 80)
+        && isNonEmptyString(d.whatsappBuyTemplate, 500)
+        && isNonEmptyString(d.whatsappConsultTemplate, 500)
+        && isNonEmptyString(d.whatsappClassTemplate, 500)
+        && isNonEmptyString(d.classesSubtitle, 400)
+        && validStringArray(d.presencialCities, 12, 60)
+        && isNonEmptyString(d.onlineLabel, 120)
+        && d.updatedAt is timestamp;
+    }
+
+    function categoryValid() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['id', 'label', 'sortOrder', 'published', 'createdAt', 'updatedAt'])
+        && validSlug(d.id)
+        && isNonEmptyString(d.label, 80)
+        && d.sortOrder is number && d.sortOrder >= 0 && d.sortOrder <= 100000
+        && d.published is bool
+        && d.updatedAt is timestamp;
+    }
+
+    function classValid() {
+      let d = request.resource.data;
+      return d.keys().hasOnly([
+          'name', 'emoji', 'image', 'description',
+          'sortOrder', 'published', 'createdAt', 'updatedAt'
+        ])
+        && isNonEmptyString(d.name, 80)
+        && isOptionalString(d.emoji, 8)
+        && validUrl(d.image)
+        && isNonEmptyString(d.description, 1000)
+        && d.sortOrder is number && d.sortOrder >= 0 && d.sortOrder <= 100000
+        && d.published is bool
+        && d.updatedAt is timestamp;
+    }
+
+    function testimonialValid() {
+      let d = request.resource.data;
+      return d.keys().hasOnly([
+          'text', 'authorName', 'authorRole', 'authorInitials',
+          'stars', 'sortOrder', 'published', 'createdAt', 'updatedAt'
+        ])
+        && isNonEmptyString(d.text, 1000)
+        && isNonEmptyString(d.authorName, 80)
+        && isNonEmptyString(d.authorRole, 120)
+        && isNonEmptyString(d.authorInitials, 4)
+        && d.stars is number && d.stars >= 1 && d.stars <= 5
+        && d.sortOrder is number && d.sortOrder >= 0 && d.sortOrder <= 100000
+        && d.published is bool
+        && d.updatedAt is timestamp;
+    }
+
     // ── PRESETS ─────────────────────────────────────────────
     match /presets/{presetId} {
-      // Público: solo publicados. Admin: todos.
-      // Las consultas públicas DEBEN filtrar published == true.
       allow get: if (resource.data.published == true) || isAdmin();
       allow list: if isAdmin()
         || (resource.data.published == true);
@@ -126,15 +174,60 @@ service cloud.firestore {
     // ── SETTINGS GLOBALES ───────────────────────────────────
     match /siteSettings/{docId} {
       allow read: if true;
-      allow write: if isAdmin()
-        && request.resource.data.keys().hasOnly([
-          'whatsappNumber', 'whatsappDisplay', 'brandName', 'updatedAt'
-        ]);
+      allow write: if isAdmin() && siteSettingsValid();
+    }
+
+    // ── CATEGORÍAS ──────────────────────────────────────────
+    match /categories/{catId} {
+      allow get: if (resource.data.published == true) || isAdmin();
+      allow list: if isAdmin() || resource.data.published == true;
+
+      allow create: if isAdmin()
+        && categoryValid()
+        && request.resource.data.id == catId
+        && request.resource.data.createdAt is timestamp;
+
+      allow update: if isAdmin()
+        && categoryValid()
+        && request.resource.data.id == catId
+        && request.resource.data.createdAt == resource.data.createdAt;
+
+      allow delete: if isAdmin() && catId != 'all';
+    }
+
+    // ── CLASES ──────────────────────────────────────────────
+    match /classes/{classId} {
+      allow get: if (resource.data.published == true) || isAdmin();
+      allow list: if isAdmin() || resource.data.published == true;
+
+      allow create: if isAdmin()
+        && classValid()
+        && request.resource.data.createdAt is timestamp;
+
+      allow update: if isAdmin()
+        && classValid()
+        && request.resource.data.createdAt == resource.data.createdAt;
+
+      allow delete: if isAdmin();
+    }
+
+    // ── TESTIMONIOS ─────────────────────────────────────────
+    match /testimonials/{testimonialId} {
+      allow get: if (resource.data.published == true) || isAdmin();
+      allow list: if isAdmin() || resource.data.published == true;
+
+      allow create: if isAdmin()
+        && testimonialValid()
+        && request.resource.data.createdAt is timestamp;
+
+      allow update: if isAdmin()
+        && testimonialValid()
+        && request.resource.data.createdAt == resource.data.createdAt;
+
+      allow delete: if isAdmin();
     }
 
     // ── AUDITORÍA ───────────────────────────────────────────
-    // Solo create por admin. Sin update/delete (integridad básica).
-    // Para integridad fuerte usar Cloud Function en el futuro.
     match /adminAuditLogs/{logId} {
       allow read: if isAdmin();
       allow create: if isAdmin()
@@ -144,7 +237,11 @@ service cloud.firestore {
         && request.resource.data.action is string
         && request.resource.data.action in [
           'preset_created', 'preset_updated',
-          'preset_published', 'preset_unpublished', 'preset_deleted'
+          'preset_published', 'preset_unpublished', 'preset_deleted',
+          'settings_updated',
+          'category_created', 'category_updated', 'category_deleted',
+          'class_created', 'class_updated', 'class_deleted',
+          'testimonial_created', 'testimonial_updated', 'testimonial_deleted'
         ]
         && request.resource.data.presetId is string
         && request.resource.data.adminUid == request.auth.uid
@@ -153,7 +250,6 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Denegar todo lo demás
     match /{document=**} {
       allow read, write: if false;
     }

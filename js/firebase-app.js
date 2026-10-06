@@ -190,6 +190,81 @@ window.HarmonyFirebase = (() => {
     }));
   };
 
+  const DEFAULT_SITE_SETTINGS = {
+    whatsappNumber: '593998116150',
+    whatsappDisplay: '+593 99 811 6150',
+    brandName: 'Harmony Lab',
+    whatsappBuyTemplate: 'Hola {{brandName}}, me interesa el preset {{presetName}} para {{platform}}.',
+    whatsappConsultTemplate: 'Hola {{brandName}}, tengo una consulta sobre el preset {{presetName}} para {{platform}}.',
+    whatsappClassTemplate: 'Hola {{brandName}}, me interesa tomar clases de {{className}}.',
+    classesSubtitle: 'Presencial en Cuenca y Guayaquil. Online al resto del mundo. Todos los niveles.',
+    presencialCities: ['Cuenca', 'Guayaquil'],
+    onlineLabel: 'Online al resto del mundo',
+  };
+
+  const fetchSiteSettings = async () => {
+    await init();
+    if (!db) throw new Error(initError || 'Firestore no disponible');
+    const snap = await db.collection('siteSettings').doc('global').get();
+    if (!snap.exists) return { ...DEFAULT_SITE_SETTINGS };
+    return { ...DEFAULT_SITE_SETTINGS, ...snap.data() };
+  };
+
+  const fetchCategories = async ({ publishedOnly = true } = {}) => {
+    await init();
+    if (!db) throw new Error(initError || 'Firestore no disponible');
+    let q = db.collection('categories').orderBy('sortOrder', 'asc');
+    if (publishedOnly) q = q.where('published', '==', true);
+    const snap = await q.get();
+    return snap.docs.map((doc) => ({
+      id: doc.id,
+      label: doc.data().label || doc.id,
+      sortOrder: doc.data().sortOrder || 0,
+      published: Boolean(doc.data().published),
+      createdAt: doc.data().createdAt || null,
+      updatedAt: doc.data().updatedAt || null,
+    }));
+  };
+
+  const fetchClasses = async ({ publishedOnly = true } = {}) => {
+    await init();
+    if (!db) throw new Error(initError || 'Firestore no disponible');
+    let q = db.collection('classes').orderBy('sortOrder', 'asc');
+    if (publishedOnly) q = q.where('published', '==', true);
+    const snap = await q.get();
+    return snap.docs.map((doc) => ({
+      id: doc.id,
+      name: doc.data().name || '',
+      emoji: doc.data().emoji || '',
+      image: doc.data().image || '',
+      description: doc.data().description || '',
+      sortOrder: doc.data().sortOrder || 0,
+      published: Boolean(doc.data().published),
+      createdAt: doc.data().createdAt || null,
+      updatedAt: doc.data().updatedAt || null,
+    }));
+  };
+
+  const fetchTestimonials = async ({ publishedOnly = true } = {}) => {
+    await init();
+    if (!db) throw new Error(initError || 'Firestore no disponible');
+    let q = db.collection('testimonials').orderBy('sortOrder', 'asc');
+    if (publishedOnly) q = q.where('published', '==', true);
+    const snap = await q.get();
+    return snap.docs.map((doc) => ({
+      id: doc.id,
+      text: doc.data().text || '',
+      authorName: doc.data().authorName || '',
+      authorRole: doc.data().authorRole || '',
+      authorInitials: doc.data().authorInitials || '',
+      stars: Number(doc.data().stars) || 5,
+      sortOrder: doc.data().sortOrder || 0,
+      published: Boolean(doc.data().published),
+      createdAt: doc.data().createdAt || null,
+      updatedAt: doc.data().updatedAt || null,
+    }));
+  };
+
   return {
     init,
     isConfigured,
@@ -206,5 +281,10 @@ window.HarmonyFirebase = (() => {
     mapPresetFromFirestore,
     fetchPublishedPresets,
     fetchAllPresets,
+    fetchSiteSettings,
+    fetchCategories,
+    fetchClasses,
+    fetchTestimonials,
+    DEFAULT_SITE_SETTINGS,
   };
 })();

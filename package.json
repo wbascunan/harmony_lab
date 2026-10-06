@@ -7,6 +7,8 @@
     "set-admin": "node scripts/set-admin.js",
     "migrate-presets": "node scripts/migrate-presets-to-firestore.js",
     "migrate-presets:apply": "node scripts/migrate-presets-to-firestore.js --apply",
+    "migrate-site": "node scripts/migrate-site-content.js",
+    "migrate-site:apply": "node scripts/migrate-site-content.js --apply",
     "emulators": "firebase emulators:start --only firestore,storage,auth",
     "test:rules": "firebase emulators:exec --project harmony-lab-rules-test --only firestore,storage \"node --test tests/firestore.rules.test.js tests/storage.rules.test.js\"",
     "test": "npm run test:rules"

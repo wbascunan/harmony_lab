@@ -14,8 +14,13 @@
     user: null,
     isAdmin: false,
     presets: [],
+    categories: [],
+    classes: [],
+    testimonials: [],
+    settings: null,
     editingId: null,
     deleteId: null,
+    deleteType: 'preset',
   };
 
   const screens = {
@@ -36,8 +41,28 @@
     const target = $(`#view-${view}`);
     if (target) target.hidden = false;
     $$('.admin-nav__btn').forEach((btn) => {
-      btn.classList.toggle('is-active', btn.dataset.view === view || (view === 'form' && btn.dataset.new));
+      const isNewForm = view === 'form' && btn.dataset.new;
+      const isFormNav = view === 'form' && btn.dataset.view === 'form' && !btn.dataset.new;
+      btn.classList.toggle('is-active', btn.dataset.view === view || isNewForm || isFormNav);
     });
+  };
+
+  const fillCategorySelect = (selected = '') => {
+    const sel = $('#f-category');
+    if (!sel) return;
+    const cats = state.categories.filter((c) => c.id !== 'all');
+    const opts = cats.length
+      ? cats
+      : [
+          { id: 'gratis', label: 'Gratis' },
+          { id: 'podgo', label: 'Pod Go' },
+          { id: 'zoom', label: 'Zoom' },
+          { id: 'headrush', label: 'Headrush' },
+          { id: 'helix-stadium', label: 'Helix Stadium' },
+          { id: 'helix', label: 'Helix LT / Floor / Native / Rack' },
+        ];
+    sel.innerHTML = opts.map((c) => `<option value="${c.id}">${c.label}</option>`).join('');
+    if (selected) sel.value = selected;
   };
 
   const setError = (id, msg) => {
@@ -207,6 +232,7 @@
 
   const openForm = (id = null) => {
     resetForm();
+    fillCategorySelect();
     showView('form');
     if (!id) return;
 
@@ -219,6 +245,7 @@
     $('#f-slug').value = p.slug || id;
     $('#f-slug').disabled = true;
     $('#f-platform').value = p.platform || '';
+    fillCategorySelect(p.category || 'podgo');
     $('#f-category').value = p.category || 'podgo';
     $('#f-short').value = p.shortDesc || '';
     $('#f-desc').value = p.description || '';
@@ -418,21 +445,44 @@
     await loadPresets();
   };
 
-  const askDelete = (id, name) => {
+  const askDelete = (id, name, type = 'preset') => {
     state.deleteId = id;
-    $('#confirm-text').textContent = `Se eliminará permanentemente «${name}».`;
+    state.deleteType = type;
+    const labels = {
+      preset: 'preset',
+      category: 'categoría',
+      class: 'clase',
+      testimonial: 'testimonio',
+    };
+    $('#confirm-text').textContent = `Se eliminará permanentemente ${labels[type] || 'el ítem'} «${name}».`;
     $('#confirm-modal').hidden = false;
   };
 
   const confirmDelete = async () => {
     const id = state.deleteId;
+    const type = state.deleteType || 'preset';
     $('#confirm-modal').hidden = true;
     if (!id) return;
     const db = HF.getDb();
-    await db.collection('presets').doc(id).delete();
-    await writeAudit('preset_deleted', id);
+    if (type === 'preset') {
+      await db.collection('presets').doc(id).delete();
+      await writeAudit('preset_deleted', id);
+      await loadPresets();
+    } else if (type === 'category') {
+      if (id === 'all') { alert('No puedes eliminar la categoría “all”.'); return; }
+      await db.collection('categories').doc(id).delete();
+      await writeAudit('category_deleted', id);
+      await loadCategories();
+    } else if (type === 'class') {
+      await db.collection('classes').doc(id).delete();
+      await writeAudit('class_deleted', id);
+      await loadClasses();
+    } else if (type === 'testimonial') {
+      await db.collection('testimonials').doc(id).delete();
+      await writeAudit('testimonial_deleted', id);
+      await loadTestimonials();
+    }
     state.deleteId = null;
-    await loadPresets();
   };
 
   const uploadImage = async () => {
@@ -469,6 +519,399 @@
     }
   };
 
+  /* ── Categorías ─────────────────────────────────────────── */
+  const loadCategories = async () => {
+    state.categories = await HF.fetchCategories({ publishedOnly: false });
+    fillCategorySelect($('#f-category')?.value || '');
+    renderCategoriesTable();
+  };
+
+  const renderCategoriesTable = () => {
+    const tbody = $('#categories-tbody');
+    if (!tbody) return;
+    tbody.textContent = '';
+    state.categories.forEach((c) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${c.sortOrder}</td>
+        <td><code>${HF.escapeHtml(c.id)}</code></td>
+        <td>${HF.escapeHtml(c.label)}</td>
+        <td><span class="admin-badge ${c.published ? 'admin-badge--pub' : 'admin-badge--draft'}">${c.published ? 'Publicada' : 'Oculta'}</span></td>
+        <td class="admin-row-actions"></td>
+      `;
+      const actions = tr.querySelector('.admin-row-actions');
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'admin-btn admin-btn--outline admin-btn--sm';
+      editBtn.textContent = 'Editar';
+      editBtn.addEventListener('click', () => {
+        $('#cat-editing-id').value = c.id;
+        $('#cat-id').value = c.id;
+        $('#cat-id').disabled = true;
+        $('#cat-label').value = c.label;
+        $('#cat-sort').value = String(c.sortOrder ?? 0);
+        $('#cat-published').checked = Boolean(c.published);
+      });
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'admin-btn admin-btn--danger admin-btn--sm';
+      delBtn.textContent = 'Eliminar';
+      delBtn.disabled = c.id === 'all';
+      delBtn.addEventListener('click', () => askDelete(c.id, c.label, 'category'));
+      actions.append(editBtn, delBtn);
+      tbody.appendChild(tr);
+    });
+  };
+
+  const resetCategoryForm = () => {
+    $('#category-form')?.reset();
+    $('#cat-editing-id').value = '';
+    $('#cat-id').disabled = false;
+    $('#cat-published').checked = true;
+    setError('#cat-error', '');
+  };
+
+  const saveCategory = async (e) => {
+    e.preventDefault();
+    setError('#cat-error', '');
+    try {
+      const editing = ($('#cat-editing-id').value || '').trim();
+      const id = editing || ($('#cat-id').value || '').trim();
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) throw new Error('ID inválido (slug).');
+      const label = ($('#cat-label').value || '').trim();
+      if (!label) throw new Error('Etiqueta obligatoria.');
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      const data = {
+        id,
+        label,
+        sortOrder: Number($('#cat-sort').value) || 0,
+        published: $('#cat-published').checked,
+        updatedAt: now,
+      };
+      const ref = HF.getDb().collection('categories').doc(id);
+      if (editing) {
+        const prev = await ref.get();
+        if (!prev.exists) throw new Error('Categoría no encontrada.');
+        data.createdAt = prev.data().createdAt;
+        await ref.update(data);
+        await writeAudit('category_updated', id);
+      } else {
+        const exists = await ref.get();
+        if (exists.exists) throw new Error('Ya existe esa categoría.');
+        data.createdAt = now;
+        await ref.set(data);
+        await writeAudit('category_created', id);
+      }
+      resetCategoryForm();
+      await loadCategories();
+    } catch (err) {
+      setError('#cat-error', err.message || 'Error al guardar.');
+    }
+  };
+
+  /* ── Clases ─────────────────────────────────────────────── */
+  const loadClasses = async () => {
+    state.classes = await HF.fetchClasses({ publishedOnly: false });
+    renderClassesTable();
+  };
+
+  const renderClassesTable = () => {
+    const tbody = $('#classes-tbody');
+    if (!tbody) return;
+    tbody.textContent = '';
+    state.classes.forEach((c) => {
+      const tr = document.createElement('tr');
+      const tdImg = document.createElement('td');
+      if (c.image) {
+        const img = document.createElement('img');
+        img.className = 'admin-thumb';
+        img.alt = '';
+        img.src = c.image.startsWith('http') || c.image.startsWith('/') ? c.image : `../${c.image}`;
+        tdImg.appendChild(img);
+      }
+      tr.appendChild(tdImg);
+      const addText = (t) => {
+        const td = document.createElement('td');
+        td.textContent = t;
+        tr.appendChild(td);
+      };
+      addText(c.name);
+      addText(String(c.sortOrder));
+      const tdSt = document.createElement('td');
+      tdSt.innerHTML = `<span class="admin-badge ${c.published ? 'admin-badge--pub' : 'admin-badge--draft'}">${c.published ? 'Publicada' : 'Oculta'}</span>`;
+      tr.appendChild(tdSt);
+      const tdAct = document.createElement('td');
+      tdAct.className = 'admin-row-actions';
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'admin-btn admin-btn--outline admin-btn--sm';
+      editBtn.textContent = 'Editar';
+      editBtn.addEventListener('click', () => {
+        $('#cls-editing-id').value = c.id;
+        $('#cls-id').value = c.id;
+        $('#cls-id').disabled = true;
+        $('#cls-name').value = c.name;
+        $('#cls-emoji').value = c.emoji || '';
+        $('#cls-desc').value = c.description || '';
+        $('#cls-image').value = c.image || '';
+        $('#cls-sort').value = String(c.sortOrder ?? 0);
+        $('#cls-published').checked = Boolean(c.published);
+      });
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'admin-btn admin-btn--danger admin-btn--sm';
+      delBtn.textContent = 'Eliminar';
+      delBtn.addEventListener('click', () => askDelete(c.id, c.name, 'class'));
+      tdAct.append(editBtn, delBtn);
+      tr.appendChild(tdAct);
+      tbody.appendChild(tr);
+    });
+  };
+
+  const resetClassForm = () => {
+    $('#class-form')?.reset();
+    $('#cls-editing-id').value = '';
+    $('#cls-id').disabled = false;
+    $('#cls-published').checked = true;
+    setError('#cls-error', '');
+  };
+
+  const saveClass = async (e) => {
+    e.preventDefault();
+    setError('#cls-error', '');
+    try {
+      const editing = ($('#cls-editing-id').value || '').trim();
+      const name = ($('#cls-name').value || '').trim();
+      if (!name) throw new Error('Nombre obligatorio.');
+      const id = editing || ($('#cls-id').value || '').trim() || slugify(name);
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) throw new Error('ID inválido.');
+      const image = ($('#cls-image').value || '').trim();
+      if (image && !HF.safeUrl(image)) throw new Error('URL de imagen no permitida.');
+      const description = ($('#cls-desc').value || '').trim();
+      if (!description) throw new Error('Descripción obligatoria.');
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      const data = {
+        name,
+        emoji: ($('#cls-emoji').value || '').trim(),
+        image: image || '',
+        description,
+        sortOrder: Number($('#cls-sort').value) || 0,
+        published: $('#cls-published').checked,
+        updatedAt: now,
+      };
+      const ref = HF.getDb().collection('classes').doc(id);
+      if (editing) {
+        const prev = await ref.get();
+        if (!prev.exists) throw new Error('Clase no encontrada.');
+        data.createdAt = prev.data().createdAt;
+        await ref.update(data);
+        await writeAudit('class_updated', id);
+      } else {
+        const exists = await ref.get();
+        if (exists.exists) throw new Error('Ya existe una clase con ese ID.');
+        data.createdAt = now;
+        await ref.set(data);
+        await writeAudit('class_created', id);
+      }
+      resetClassForm();
+      await loadClasses();
+    } catch (err) {
+      setError('#cls-error', err.message || 'Error al guardar.');
+    }
+  };
+
+  const uploadClassImage = async () => {
+    const file = $('#cls-imageFile').files?.[0];
+    if (!file) { setError('#cls-error', 'Selecciona una imagen.'); return; }
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      setError('#cls-error', 'Solo JPG, PNG o WebP.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('#cls-error', 'Máximo 5 MB.');
+      return;
+    }
+    const classId = ($('#cls-editing-id').value || $('#cls-id').value || slugify($('#cls-name').value) || 'temp');
+    const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+    const path = `class-images/${classId}/cover-${Date.now()}.${ext}`;
+    try {
+      setError('#cls-error', '');
+      const ref = HF.getStorage().ref().child(path);
+      await ref.put(file, { contentType: file.type });
+      $('#cls-image').value = await ref.getDownloadURL();
+    } catch (err) {
+      setError('#cls-error', err.message || 'Error al subir imagen.');
+    }
+  };
+
+  /* ── Testimonios ────────────────────────────────────────── */
+  const loadTestimonials = async () => {
+    state.testimonials = await HF.fetchTestimonials({ publishedOnly: false });
+    renderTestimonialsTable();
+  };
+
+  const renderTestimonialsTable = () => {
+    const tbody = $('#testimonials-tbody');
+    if (!tbody) return;
+    tbody.textContent = '';
+    state.testimonials.forEach((t) => {
+      const tr = document.createElement('tr');
+      const tdAuthor = document.createElement('td');
+      tdAuthor.textContent = `${t.authorName} (${t.authorInitials})`;
+      tr.appendChild(tdAuthor);
+      const tdText = document.createElement('td');
+      tdText.textContent = t.text.length > 80 ? `${t.text.slice(0, 80)}…` : t.text;
+      tr.appendChild(tdText);
+      const tdStars = document.createElement('td');
+      tdStars.textContent = String(t.stars);
+      tr.appendChild(tdStars);
+      const tdSt = document.createElement('td');
+      tdSt.innerHTML = `<span class="admin-badge ${t.published ? 'admin-badge--pub' : 'admin-badge--draft'}">${t.published ? 'Publicado' : 'Oculto'}</span>`;
+      tr.appendChild(tdSt);
+      const tdAct = document.createElement('td');
+      tdAct.className = 'admin-row-actions';
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'admin-btn admin-btn--outline admin-btn--sm';
+      editBtn.textContent = 'Editar';
+      editBtn.addEventListener('click', () => {
+        $('#tst-editing-id').value = t.id;
+        $('#tst-text').value = t.text;
+        $('#tst-name').value = t.authorName;
+        $('#tst-role').value = t.authorRole;
+        $('#tst-initials').value = t.authorInitials;
+        $('#tst-stars').value = String(t.stars || 5);
+        $('#tst-sort').value = String(t.sortOrder ?? 0);
+        $('#tst-published').checked = Boolean(t.published);
+      });
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'admin-btn admin-btn--danger admin-btn--sm';
+      delBtn.textContent = 'Eliminar';
+      delBtn.addEventListener('click', () => askDelete(t.id, t.authorName, 'testimonial'));
+      tdAct.append(editBtn, delBtn);
+      tr.appendChild(tdAct);
+      tbody.appendChild(tr);
+    });
+  };
+
+  const resetTestimonialForm = () => {
+    $('#testimonial-form')?.reset();
+    $('#tst-editing-id').value = '';
+    $('#tst-stars').value = '5';
+    $('#tst-published').checked = true;
+    setError('#tst-error', '');
+  };
+
+  const saveTestimonial = async (e) => {
+    e.preventDefault();
+    setError('#tst-error', '');
+    try {
+      const editing = ($('#tst-editing-id').value || '').trim();
+      const authorName = ($('#tst-name').value || '').trim();
+      const text = ($('#tst-text').value || '').trim();
+      const authorRole = ($('#tst-role').value || '').trim();
+      const authorInitials = ($('#tst-initials').value || '').trim().toUpperCase();
+      if (!text || !authorName || !authorRole || !authorInitials) {
+        throw new Error('Completa todos los campos obligatorios.');
+      }
+      const stars = Number($('#tst-stars').value) || 5;
+      if (stars < 1 || stars > 5) throw new Error('Estrellas entre 1 y 5.');
+      const id = editing || slugify(`${authorName}-${Date.now().toString(36)}`);
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      const data = {
+        text,
+        authorName,
+        authorRole,
+        authorInitials: authorInitials.slice(0, 4),
+        stars,
+        sortOrder: Number($('#tst-sort').value) || 0,
+        published: $('#tst-published').checked,
+        updatedAt: now,
+      };
+      const ref = HF.getDb().collection('testimonials').doc(id);
+      if (editing) {
+        const prev = await ref.get();
+        if (!prev.exists) throw new Error('Testimonio no encontrado.');
+        data.createdAt = prev.data().createdAt;
+        await ref.update(data);
+        await writeAudit('testimonial_updated', id);
+      } else {
+        data.createdAt = now;
+        await ref.set(data);
+        await writeAudit('testimonial_created', id);
+      }
+      resetTestimonialForm();
+      await loadTestimonials();
+    } catch (err) {
+      setError('#tst-error', err.message || 'Error al guardar.');
+    }
+  };
+
+  /* ── Settings ───────────────────────────────────────────── */
+  const loadSettings = async () => {
+    const s = await HF.fetchSiteSettings();
+    state.settings = s;
+    $('#set-wa-number').value = s.whatsappNumber || '';
+    $('#set-wa-display').value = s.whatsappDisplay || '';
+    $('#set-brand').value = s.brandName || '';
+    $('#set-wa-buy').value = s.whatsappBuyTemplate || '';
+    $('#set-wa-consult').value = s.whatsappConsultTemplate || '';
+    $('#set-wa-class').value = s.whatsappClassTemplate || '';
+    $('#set-classes-subtitle').value = s.classesSubtitle || '';
+    $('#set-cities').value = arrayToLines(s.presencialCities || []);
+    $('#set-online').value = s.onlineLabel || '';
+    setError('#set-error', '');
+    $('#set-success').hidden = true;
+  };
+
+  const saveSettings = async (e) => {
+    e.preventDefault();
+    setError('#set-error', '');
+    $('#set-success').hidden = true;
+    try {
+      const whatsappNumber = ($('#set-wa-number').value || '').replace(/\D/g, '');
+      if (!whatsappNumber) throw new Error('Número de WhatsApp inválido.');
+      const presencialCities = linesToArray($('#set-cities').value).slice(0, 12);
+      if (!presencialCities.length) throw new Error('Indica al menos una ciudad.');
+      const data = {
+        whatsappNumber,
+        whatsappDisplay: ($('#set-wa-display').value || '').trim(),
+        brandName: ($('#set-brand').value || '').trim(),
+        whatsappBuyTemplate: ($('#set-wa-buy').value || '').trim(),
+        whatsappConsultTemplate: ($('#set-wa-consult').value || '').trim(),
+        whatsappClassTemplate: ($('#set-wa-class').value || '').trim(),
+        classesSubtitle: ($('#set-classes-subtitle').value || '').trim(),
+        presencialCities,
+        onlineLabel: ($('#set-online').value || '').trim(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      };
+      if (!data.whatsappDisplay || !data.brandName || !data.whatsappBuyTemplate
+        || !data.whatsappConsultTemplate || !data.whatsappClassTemplate
+        || !data.classesSubtitle || !data.onlineLabel) {
+        throw new Error('Completa todos los campos.');
+      }
+      await HF.getDb().collection('siteSettings').doc('global').set(data, { merge: true });
+      await writeAudit('settings_updated', 'global');
+      $('#set-success').hidden = false;
+      $('#set-success').textContent = 'Ajustes guardados.';
+      await loadSettings();
+    } catch (err) {
+      setError('#set-error', err.message || 'Error al guardar.');
+    }
+  };
+
+  const loadAdminData = async () => {
+    await Promise.all([
+      loadPresets(),
+      loadCategories(),
+      loadClasses(),
+      loadTestimonials(),
+      loadSettings(),
+    ]);
+  };
+
   const onAuth = async (user) => {
     try {
       state.user = user;
@@ -479,7 +922,6 @@
       }
 
       $('#admin-user-email').textContent = user.email || user.uid;
-      // Forzar refresh por si acabaron de asignar claim
       const admin = await HF.isAdminUser(true);
       state.isAdmin = admin;
 
@@ -491,10 +933,10 @@
       showScreen('dashboard');
       showView('home');
       try {
-        await loadPresets();
+        await loadAdminData();
       } catch (err) {
         console.error(err);
-        alert('No se pudieron cargar los presets. ¿Desplegaste las Security Rules?');
+        alert('No se pudieron cargar datos. ¿Desplegaste las Security Rules e índices?');
       }
     } catch (err) {
       console.error('[Admin] onAuth error:', err);
@@ -558,10 +1000,28 @@
     $('#list-filter-status')?.addEventListener('change', renderTable);
     $('#confirm-yes')?.addEventListener('click', confirmDelete);
     $('#confirm-no')?.addEventListener('click', () => { $('#confirm-modal').hidden = true; state.deleteId = null; });
+
+    $('#category-form')?.addEventListener('submit', saveCategory);
+    $('#cat-reset')?.addEventListener('click', resetCategoryForm);
+    $('#cat-label')?.addEventListener('input', () => {
+      if ($('#cat-editing-id').value) return;
+      if (!$('#cat-id').value) $('#cat-id').value = slugify($('#cat-label').value);
+    });
+
+    $('#class-form')?.addEventListener('submit', saveClass);
+    $('#cls-reset')?.addEventListener('click', resetClassForm);
+    $('#btn-upload-class-image')?.addEventListener('click', uploadClassImage);
+    $('#cls-name')?.addEventListener('input', () => {
+      if ($('#cls-editing-id').value) return;
+      if (!$('#cls-id').value) $('#cls-id').value = slugify($('#cls-name').value);
+    });
+
+    $('#testimonial-form')?.addEventListener('submit', saveTestimonial);
+    $('#tst-reset')?.addEventListener('click', resetTestimonialForm);
+    $('#settings-form')?.addEventListener('submit', saveSettings);
   };
 
   const init = async () => {
-    // Si Auth tarda demasiado, no dejar la UI colgada
     const loadingWatchdog = setTimeout(() => {
       if (!screens.loading?.hidden) {
         showScreen('login');

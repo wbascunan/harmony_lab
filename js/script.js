@@ -181,6 +181,38 @@ const setCatalogProducts = (products, source = 'config') => {
   }
 };
 
+const applyTemplate = (template, vars = {}) => {
+  let text = String(template || '');
+  Object.entries(vars).forEach(([key, value]) => {
+    text = text.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value ?? ''));
+  });
+  return text;
+};
+
+const applySiteSettings = (settings) => {
+  if (!settings || !window.HARMONY_LAB_CONFIG) return;
+  const cfg = window.HARMONY_LAB_CONFIG;
+  cfg.contact = {
+    ...cfg.contact,
+    whatsapp: settings.whatsappNumber || cfg.contact.whatsapp,
+    whatsappDisplay: settings.whatsappDisplay || cfg.contact.whatsappDisplay,
+    brandName: settings.brandName || cfg.contact.brandName,
+  };
+  cfg.whatsappTemplates = {
+    buy: settings.whatsappBuyTemplate,
+    consult: settings.whatsappConsultTemplate,
+    class: settings.whatsappClassTemplate,
+  };
+  cfg.classesInfo = {
+    ...cfg.classesInfo,
+    subtitle: settings.classesSubtitle || cfg.classesInfo?.subtitle,
+    presencialCities: Array.isArray(settings.presencialCities) && settings.presencialCities.length
+      ? settings.presencialCities
+      : cfg.classesInfo?.presencialCities,
+    onlineLabel: settings.onlineLabel || cfg.classesInfo?.onlineLabel,
+  };
+};
+
 /**
  * Mensaje de contacto para WhatsApp
  */
@@ -208,21 +240,33 @@ const buildWhatsAppUrl = (message, phoneOverride = null) => {
  */
 const buildBuyMessage = (product) => {
   if (product.whatsappMessage && String(product.whatsappMessage).trim()) {
-    return String(product.whatsappMessage)
-      .replace(/\{\{presetName\}\}/g, product.name)
-      .replace(/\{\{name\}\}/g, product.name)
-      .replace(/\{\{platform\}\}/g, product.platform || '');
+    return applyTemplate(product.whatsappMessage, {
+      presetName: product.name,
+      name: product.name,
+      platform: product.platform || '',
+      brandName: getConfig().contact.brandName || 'Harmony Lab',
+    });
   }
-  const { brandName } = getConfig().contact;
-  return `Hola ${brandName}, me interesa el preset ${product.name} para ${product.platform}.`;
+  const tpl = getConfig().whatsappTemplates?.buy
+    || 'Hola {{brandName}}, me interesa el preset {{presetName}} para {{platform}}.';
+  return applyTemplate(tpl, {
+    brandName: getConfig().contact.brandName || 'Harmony Lab',
+    presetName: product.name,
+    platform: product.platform || '',
+  });
 };
 
 /**
  * Mensaje de consulta para WhatsApp
  */
 const buildConsultMessage = (product) => {
-  const { brandName } = getConfig().contact;
-  return `Hola ${brandName}, tengo una consulta sobre el preset ${product.name} para ${product.platform}.`;
+  const tpl = getConfig().whatsappTemplates?.consult
+    || 'Hola {{brandName}}, tengo una consulta sobre el preset {{presetName}} para {{platform}}.';
+  return applyTemplate(tpl, {
+    brandName: getConfig().contact.brandName || 'Harmony Lab',
+    presetName: product.name,
+    platform: product.platform || '',
+  });
 };
 
 /**
@@ -677,17 +721,21 @@ const initCatalog = async () => {
    ────────────────────────────────────────────────────────── */
 
 const buildClassMessage = (className) => {
-  const { brandName } = getConfig().contact;
-  return `Hola ${brandName}, me interesa tomar clases de ${className}.`;
+  const tpl = getConfig().whatsappTemplates?.class
+    || 'Hola {{brandName}}, me interesa tomar clases de {{className}}.';
+  return applyTemplate(tpl, {
+    brandName: getConfig().contact.brandName || 'Harmony Lab',
+    className,
+  });
 };
 
 const renderClassCard = (classItem, index) => {
   const delayClass = index % 4 > 0 ? ` scroll-reveal--delay-${index % 4}` : '';
-  const { presencialCities } = getConfig().classesInfo;
+  const { presencialCities } = getConfig().classesInfo || {};
   const waUrl = buildWhatsAppUrl(buildClassMessage(classItem.name));
   const hasImage = Boolean(classItem.image);
 
-  const cityTags = presencialCities.map(city => `
+  const cityTags = (presencialCities || []).map(city => `
     <span class="class-tag class-tag--city"><i class="fas fa-map-marker-alt"></i> ${city}</span>
   `).join('');
 
@@ -731,7 +779,7 @@ const initClasses = () => {
   }
 
   if (locationsEl && classesInfo) {
-    const cities = classesInfo.presencialCities.join(' · ');
+    const cities = (classesInfo.presencialCities || []).join(' · ');
     locationsEl.innerHTML = `
       <div class="classes-location-card classes-location-card--presential">
         <span class="classes-location-card__icon" aria-hidden="true"><i class="fas fa-map-marker-alt"></i></span>
@@ -744,7 +792,7 @@ const initClasses = () => {
         <span class="classes-location-card__icon" aria-hidden="true"><i class="fas fa-globe"></i></span>
         <div>
           <strong>Online</strong>
-          <span>${classesInfo.onlineLabel}</span>
+          <span>${classesInfo.onlineLabel || ''}</span>
         </div>
       </div>
     `;
@@ -754,6 +802,93 @@ const initClasses = () => {
     gridEl.innerHTML = classes.map((c, i) => renderClassCard(c, i)).join('');
     observeNewRevealElements(gridEl);
   }
+};
+
+const escapeText = (str) => {
+  if (window.HarmonyFirebase?.escapeHtml) return window.HarmonyFirebase.escapeHtml(str);
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+};
+
+const renderTestimonialCard = (t, index) => {
+  const delay = index % 3 > 0 ? ` scroll-reveal--delay-${index % 3}` : '';
+  const stars = Math.min(5, Math.max(1, Number(t.stars) || 5));
+  const starsHtml = Array.from({ length: stars }, () => '<i class="fas fa-star"></i>').join('');
+  const text = escapeText(t.text || '');
+  const quoted = text.startsWith('"') ? text : `"${text}"`;
+  return `
+    <blockquote class="testimonial-card scroll-reveal${delay}">
+      <div class="testimonial-stars" aria-label="${stars} estrellas">${starsHtml}</div>
+      <p class="testimonial-text">${quoted}</p>
+      <footer class="testimonial-author">
+        <div class="author-avatar" aria-hidden="true">
+          <span>${escapeText(t.authorInitials || 'HL')}</span>
+        </div>
+        <div>
+          <cite class="author-name">${escapeText(t.authorName || '')}</cite>
+          <span class="author-role">${escapeText(t.authorRole || '')}</span>
+        </div>
+      </footer>
+    </blockquote>
+  `;
+};
+
+const initTestimonials = () => {
+  const grid = $('#testimonials-grid');
+  if (!grid) return;
+  const list = getConfig().testimonials || [];
+  if (!list.length) {
+    grid.innerHTML = '';
+    return;
+  }
+  grid.innerHTML = list.map((t, i) => renderTestimonialCard(t, i)).join('');
+  observeNewRevealElements(grid);
+};
+
+/**
+ * Carga settings / categorías / clases / testimonios desde Firestore (con fallback).
+ */
+const initRemoteContent = async () => {
+  const HF = window.HarmonyFirebase;
+  if (!HF || !HF.isConfigured()) {
+    initSiteContact();
+    initClasses();
+    initTestimonials();
+    return;
+  }
+
+  try {
+    await HF.init();
+    const [settings, categories, classes, testimonials] = await Promise.all([
+      HF.fetchSiteSettings().catch(() => null),
+      HF.fetchCategories({ publishedOnly: true }).catch(() => null),
+      HF.fetchClasses({ publishedOnly: true }).catch(() => null),
+      HF.fetchTestimonials({ publishedOnly: true }).catch(() => null),
+    ]);
+
+    if (settings) applySiteSettings(settings);
+
+    if (window.HARMONY_LAB_CONFIG) {
+      if (Array.isArray(categories) && categories.length) {
+        window.HARMONY_LAB_CONFIG.categories = categories.map((c) => ({ id: c.id, label: c.label }));
+      }
+      if (Array.isArray(classes) && classes.length) {
+        window.HARMONY_LAB_CONFIG.classes = classes;
+      }
+      if (Array.isArray(testimonials) && testimonials.length) {
+        window.HARMONY_LAB_CONFIG.testimonials = testimonials;
+      }
+    }
+  } catch (err) {
+    console.warn('[HarmonyLab] Contenido remoto falló, usando config local.', err?.message || err);
+  }
+
+  initSiteContact();
+  initClasses();
+  initTestimonials();
 };
 
 /**
@@ -1033,9 +1168,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initSmoothScroll();
   initScrollAnimations();
   initBrand();
-  initSiteContact();
+  initRemoteContent();
   initCatalog();
-  initClasses();
   initFaq();
   initContactForm();
   initBackToTop();

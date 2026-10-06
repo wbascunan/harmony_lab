@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="admin.css?v=3" />
+  <link rel="stylesheet" href="admin.css?v=4" />
 </head>
 <body>
   <div id="admin-app">
@@ -71,6 +71,10 @@
           <button type="button" class="admin-nav__btn is-active" data-view="home"><i class="fas fa-gauge"></i> Dashboard</button>
           <button type="button" class="admin-nav__btn" data-view="list"><i class="fas fa-sliders"></i> Presets</button>
           <button type="button" class="admin-nav__btn" data-view="form" data-new="1"><i class="fas fa-plus"></i> Nuevo preset</button>
+          <button type="button" class="admin-nav__btn" data-view="categories"><i class="fas fa-tags"></i> Categorías</button>
+          <button type="button" class="admin-nav__btn" data-view="classes"><i class="fas fa-graduation-cap"></i> Clases</button>
+          <button type="button" class="admin-nav__btn" data-view="testimonials"><i class="fas fa-quote-left"></i> Testimonios</button>
+          <button type="button" class="admin-nav__btn" data-view="settings"><i class="fas fa-gear"></i> WhatsApp / Ajustes</button>
         </nav>
         <div class="admin-sidebar__foot">
           <p class="admin-user-email" id="admin-user-email"></p>
@@ -156,12 +160,7 @@
               <div class="admin-field">
                 <label for="f-category">Categoría *</label>
                 <select class="admin-input" id="f-category" required>
-                  <option value="gratis">Gratis</option>
-                  <option value="podgo">Pod Go</option>
-                  <option value="zoom">Zoom</option>
-                  <option value="headrush">Headrush</option>
-                  <option value="helix-stadium">Helix Stadium</option>
-                  <option value="helix">Helix LT / Floor / Native / Rack</option>
+                  <!-- se llena desde Firestore -->
                 </select>
               </div>
               <div class="admin-field">
@@ -246,6 +245,209 @@
             </div>
           </form>
         </div>
+
+        <!-- CATEGORIES -->
+        <div class="admin-view" id="view-categories" hidden>
+          <header class="admin-header">
+            <h2>Categorías</h2>
+          </header>
+          <p class="admin-muted">Filtros del catálogo (Pod Go, Zoom, Gratis…). La categoría <code>all</code> = “Todos”.</p>
+          <form id="category-form" class="admin-form admin-form--inline" novalidate>
+            <input type="hidden" id="cat-editing-id" />
+            <div class="admin-form-grid">
+              <div class="admin-field">
+                <label for="cat-id">ID (slug) *</label>
+                <input class="admin-input" id="cat-id" required maxlength="40" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="podgo" />
+              </div>
+              <div class="admin-field">
+                <label for="cat-label">Etiqueta *</label>
+                <input class="admin-input" id="cat-label" required maxlength="80" placeholder="Pod Go" />
+              </div>
+              <div class="admin-field">
+                <label for="cat-sort">Orden</label>
+                <input class="admin-input" id="cat-sort" type="number" min="0" value="0" />
+              </div>
+              <div class="admin-field admin-checks">
+                <label><input type="checkbox" id="cat-published" checked /> Publicada</label>
+              </div>
+            </div>
+            <p class="admin-error" id="cat-error" role="alert" hidden></p>
+            <div class="admin-form-actions">
+              <button type="submit" class="admin-btn admin-btn--primary" id="cat-save">Guardar categoría</button>
+              <button type="button" class="admin-btn admin-btn--outline" id="cat-reset">Limpiar</button>
+            </div>
+          </form>
+          <div class="admin-table-wrap" style="margin-top:1.25rem">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Orden</th><th>ID</th><th>Etiqueta</th><th>Estado</th><th>Acciones</th></tr>
+              </thead>
+              <tbody id="categories-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- CLASSES -->
+        <div class="admin-view" id="view-classes" hidden>
+          <header class="admin-header">
+            <h2>Clases de música</h2>
+          </header>
+          <form id="class-form" class="admin-form" novalidate>
+            <input type="hidden" id="cls-editing-id" />
+            <div class="admin-form-grid">
+              <div class="admin-field">
+                <label for="cls-name">Nombre *</label>
+                <input class="admin-input" id="cls-name" required maxlength="80" />
+              </div>
+              <div class="admin-field">
+                <label for="cls-id">ID (slug)</label>
+                <input class="admin-input" id="cls-id" maxlength="40" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="se genera del nombre" />
+              </div>
+              <div class="admin-field">
+                <label for="cls-emoji">Emoji</label>
+                <input class="admin-input" id="cls-emoji" maxlength="8" placeholder="🎸" />
+              </div>
+              <div class="admin-field">
+                <label for="cls-sort">Orden</label>
+                <input class="admin-input" id="cls-sort" type="number" min="0" value="0" />
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="cls-desc">Descripción *</label>
+                <textarea class="admin-input" id="cls-desc" rows="3" required maxlength="1000"></textarea>
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="cls-image">URL imagen</label>
+                <input class="admin-input" id="cls-image" placeholder="assets/images/clase_guitarra.png" />
+                <div class="admin-upload-row">
+                  <input type="file" id="cls-imageFile" accept="image/jpeg,image/png,image/webp" />
+                  <button type="button" class="admin-btn admin-btn--outline" id="btn-upload-class-image">Subir a Storage</button>
+                </div>
+              </div>
+              <div class="admin-field admin-checks">
+                <label><input type="checkbox" id="cls-published" checked /> Publicada</label>
+              </div>
+            </div>
+            <p class="admin-error" id="cls-error" role="alert" hidden></p>
+            <div class="admin-form-actions">
+              <button type="submit" class="admin-btn admin-btn--primary">Guardar clase</button>
+              <button type="button" class="admin-btn admin-btn--outline" id="cls-reset">Limpiar</button>
+            </div>
+          </form>
+          <div class="admin-table-wrap" style="margin-top:1.25rem">
+            <table class="admin-table">
+              <thead>
+                <tr><th></th><th>Nombre</th><th>Orden</th><th>Estado</th><th>Acciones</th></tr>
+              </thead>
+              <tbody id="classes-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TESTIMONIALS -->
+        <div class="admin-view" id="view-testimonials" hidden>
+          <header class="admin-header">
+            <h2>Testimonios</h2>
+          </header>
+          <form id="testimonial-form" class="admin-form" novalidate>
+            <input type="hidden" id="tst-editing-id" />
+            <div class="admin-form-grid">
+              <div class="admin-field admin-field--full">
+                <label for="tst-text">Texto *</label>
+                <textarea class="admin-input" id="tst-text" rows="4" required maxlength="1000"></textarea>
+              </div>
+              <div class="admin-field">
+                <label for="tst-name">Nombre *</label>
+                <input class="admin-input" id="tst-name" required maxlength="80" />
+              </div>
+              <div class="admin-field">
+                <label for="tst-role">Rol / detalle *</label>
+                <input class="admin-input" id="tst-role" required maxlength="120" />
+              </div>
+              <div class="admin-field">
+                <label for="tst-initials">Iniciales *</label>
+                <input class="admin-input" id="tst-initials" required maxlength="4" placeholder="CR" />
+              </div>
+              <div class="admin-field">
+                <label for="tst-stars">Estrellas</label>
+                <input class="admin-input" id="tst-stars" type="number" min="1" max="5" value="5" />
+              </div>
+              <div class="admin-field">
+                <label for="tst-sort">Orden</label>
+                <input class="admin-input" id="tst-sort" type="number" min="0" value="0" />
+              </div>
+              <div class="admin-field admin-checks">
+                <label><input type="checkbox" id="tst-published" checked /> Publicado</label>
+              </div>
+            </div>
+            <p class="admin-error" id="tst-error" role="alert" hidden></p>
+            <div class="admin-form-actions">
+              <button type="submit" class="admin-btn admin-btn--primary">Guardar testimonio</button>
+              <button type="button" class="admin-btn admin-btn--outline" id="tst-reset">Limpiar</button>
+            </div>
+          </form>
+          <div class="admin-table-wrap" style="margin-top:1.25rem">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Autor</th><th>Texto</th><th>★</th><th>Estado</th><th>Acciones</th></tr>
+              </thead>
+              <tbody id="testimonials-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="admin-view" id="view-settings" hidden>
+          <header class="admin-header">
+            <h2>WhatsApp y ajustes globales</h2>
+          </header>
+          <form id="settings-form" class="admin-form" novalidate>
+            <div class="admin-form-grid">
+              <div class="admin-field">
+                <label for="set-wa-number">Número WhatsApp (solo dígitos) *</label>
+                <input class="admin-input" id="set-wa-number" required maxlength="20" placeholder="593998116150" />
+              </div>
+              <div class="admin-field">
+                <label for="set-wa-display">WhatsApp visible *</label>
+                <input class="admin-input" id="set-wa-display" required maxlength="40" placeholder="+593 99 811 6150" />
+              </div>
+              <div class="admin-field">
+                <label for="set-brand">Nombre de marca *</label>
+                <input class="admin-input" id="set-brand" required maxlength="80" />
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="set-wa-buy">Mensaje compra preset *</label>
+                <textarea class="admin-input" id="set-wa-buy" rows="2" required maxlength="500"></textarea>
+                <p class="admin-hint">Variables: {{brandName}} {{presetName}} {{platform}}</p>
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="set-wa-consult">Mensaje consulta preset *</label>
+                <textarea class="admin-input" id="set-wa-consult" rows="2" required maxlength="500"></textarea>
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="set-wa-class">Mensaje solicitud clase *</label>
+                <textarea class="admin-input" id="set-wa-class" rows="2" required maxlength="500"></textarea>
+                <p class="admin-hint">Variables: {{brandName}} {{className}}</p>
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="set-classes-subtitle">Subtítulo sección clases *</label>
+                <textarea class="admin-input" id="set-classes-subtitle" rows="2" required maxlength="400"></textarea>
+              </div>
+              <div class="admin-field">
+                <label for="set-cities">Ciudades presenciales (una por línea) *</label>
+                <textarea class="admin-input" id="set-cities" rows="3" required></textarea>
+              </div>
+              <div class="admin-field">
+                <label for="set-online">Etiqueta online *</label>
+                <input class="admin-input" id="set-online" required maxlength="120" />
+              </div>
+            </div>
+            <p class="admin-error" id="set-error" role="alert" hidden></p>
+            <p class="admin-success" id="set-success" role="status" hidden></p>
+            <div class="admin-form-actions">
+              <button type="submit" class="admin-btn admin-btn--primary">Guardar ajustes</button>
+            </div>
+          </form>
+        </div>
       </main>
     </section>
   </div>
@@ -269,6 +471,6 @@
   <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-check-compat.js"></script>
   <script src="../js/firebase-config.js"></script>
   <script src="../js/firebase-app.js"></script>
-  <script src="admin.js?v=3"></script>
+  <script src="admin.js?v=4"></script>
 </body>
 </html>

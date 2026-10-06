@@ -77,9 +77,32 @@ const HARMONY_LAB_CONFIG = {
     },
   ],
 
-  /* ── Testimonios (demo — editar cuando estén listos) ─────── */
+  /* ── Testimonios ───────────────────────────────────────── */
   testimonials: [
-    /* Reservado para futura renderización dinámica */
+    {
+      id: 'carlos-r',
+      text: 'El Modern Metal Pack para Pod Go cambió completamente mi sonido en vivo. Subí al escenario y el sonido era brutal y definido. Mis compañeros de banda no podían creer que viniera de una pedalera.',
+      authorName: 'Carlos R.',
+      authorRole: 'Guitarrista — Banda de Metalcore',
+      authorInitials: 'CR',
+      stars: 5,
+    },
+    {
+      id: 'mariana-p',
+      text: 'Llevo 3 meses con clases de guitarra online con Harmony Lab y el avance ha sido enorme. Las clases son claras, los materiales excelentes y siempre hay respuesta rápida a mis dudas. 100% recomendado.',
+      authorName: 'Mariana P.',
+      authorRole: 'Alumna de Guitarra',
+      authorInitials: 'MP',
+      stars: 5,
+    },
+    {
+      id: 'andres-l',
+      text: 'Compré el HX Stomp Studio Pack para una sesión de grabación y el ingeniero de sonido quedó impresionado. Muy fácil de instalar y el soporte de Harmony Lab fue impecable cuando tuve dudas técnicas.',
+      authorName: 'Andrés L.',
+      authorRole: 'Músico de sesión',
+      authorInitials: 'AL',
+      stars: 5,
+    },
   ],
 
   /* ── Estadísticas del Hero (demo — editar cuando estén listas) ── */
