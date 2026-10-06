@@ -1,0 +1,161 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.keys().hasAny(['admin'])
+        && request.auth.token.admin == true;
+    }
+
+    function isNonEmptyString(v, maxLen) {
+      return v is string && v.size() > 0 && v.size() <= maxLen;
+    }
+
+    function isOptionalString(v, maxLen) {
+      return v == null || (v is string && v.size() <= maxLen);
+    }
+
+    function isStringList(v, maxItems, maxItemLen) {
+      return v is list && v.size() <= maxItems;
+    }
+
+    function validSlug(s) {
+      return s is string
+        && s.size() >= 2
+        && s.size() <= 80
+        && s.matches('^[a-z0-9]+(?:-[a-z0-9]+)*$');
+    }
+
+    function validPrice(p) {
+      return p == null || (p is number && p >= 0 && p <= 100000);
+    }
+
+    function validUrl(u) {
+      return u == null
+        || (u is string && u.size() == 0)
+        || (u is string && u.size() <= 2048 && (
+             u.matches('^https://.*')
+          || u.matches('^assets/.*')
+          || u.matches('^/.*')
+        ));
+    }
+
+    function validFeature(f) {
+      return f is map
+        && f.keys().hasOnly(['icon', 'label'])
+        && f.icon is string && f.icon.size() <= 60
+        && f.label is string && f.label.size() <= 80;
+    }
+
+    function validFeatures(list) {
+      return list is list && list.size() <= 12;
+    }
+
+    function validStringArray(list, maxItems, maxLen) {
+      return list is list && list.size() <= maxItems;
+    }
+
+    function presetKeysOk() {
+      return request.resource.data.keys().hasOnly([
+        'name', 'slug', 'shortDescription', 'description',
+        'price', 'currency', 'category', 'platform',
+        'compatibleDevices', 'includes', 'presets', 'snapshots',
+        'badges', 'features', 'thumb', 'imageUrl', 'gallery',
+        'whatsappNumber', 'whatsappMessage', 'downloadUrl',
+        'free', 'featured', 'published', 'sortOrder',
+        'createdAt', 'updatedAt'
+      ]);
+    }
+
+    function presetDataValid() {
+      let d = request.resource.data;
+      return presetKeysOk()
+        && isNonEmptyString(d.name, 120)
+        && validSlug(d.slug)
+        && isNonEmptyString(d.shortDescription, 400)
+        && isNonEmptyString(d.description, 5000)
+        && validPrice(d.price)
+        && d.currency is string && d.currency.size() <= 8
+        && isNonEmptyString(d.category, 40)
+        && isNonEmptyString(d.platform, 80)
+        && validStringArray(d.compatibleDevices, 20, 80)
+        && validStringArray(d.includes, 30, 200)
+        && (!('presets' in d) || d.presets == null || validStringArray(d.presets, 40, 80))
+        && (!('snapshots' in d) || d.snapshots == null || validStringArray(d.snapshots, 40, 80))
+        && validStringArray(d.badges, 12, 40)
+        && validFeatures(d.features)
+        && isOptionalString(d.thumb, 40)
+        && validUrl(d.imageUrl)
+        && validStringArray(d.gallery, 12, 2048)
+        && isOptionalString(d.whatsappNumber, 20)
+        && isOptionalString(d.whatsappMessage, 500)
+        && validUrl(d.downloadUrl)
+        && d.free is bool
+        && d.featured is bool
+        && d.published is bool
+        && d.sortOrder is number && d.sortOrder >= 0 && d.sortOrder <= 100000
+        && d.updatedAt is timestamp;
+    }
+
+    // ── PRESETS ─────────────────────────────────────────────
+    match /presets/{presetId} {
+      // Público: solo publicados. Admin: todos.
+      // Las consultas públicas DEBEN filtrar published == true.
+      allow get: if (resource.data.published == true) || isAdmin();
+      allow list: if isAdmin()
+        || (resource.data.published == true);
+
+      allow create: if isAdmin()
+        && presetDataValid()
+        && request.resource.data.createdAt is timestamp;
+
+      allow update: if isAdmin()
+        && presetDataValid()
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.slug == resource.data.slug;
+
+      allow delete: if isAdmin();
+    }
+
+    // ── SETTINGS GLOBALES ───────────────────────────────────
+    match /siteSettings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly([
+          'whatsappNumber', 'whatsappDisplay', 'brandName', 'updatedAt'
+        ]);
+    }
+
+    // ── AUDITORÍA ───────────────────────────────────────────
+    // Solo create por admin. Sin update/delete (integridad básica).
+    // Para integridad fuerte usar Cloud Function en el futuro.
+    match /adminAuditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly([
+          'action', 'presetId', 'adminUid', 'adminEmail', 'timestamp'
+        ])
+        && request.resource.data.action is string
+        && request.resource.data.action in [
+          'preset_created', 'preset_updated',
+          'preset_published', 'preset_unpublished', 'preset_deleted'
+        ]
+        && request.resource.data.presetId is string
+        && request.resource.data.adminUid == request.auth.uid
+        && request.resource.data.adminEmail is string
+        && request.resource.data.timestamp is timestamp;
+      allow update, delete: if false;
+    }
+
+    // Denegar todo lo demás
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

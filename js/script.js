@@ -167,6 +167,20 @@ const initScrollAnimations = () => {
 
 const getConfig = () => window.HARMONY_LAB_CONFIG || { products: [], categories: [], contact: {}, badgeLabels: {} };
 
+/** Cache en runtime: productos del catálogo (Firestore o fallback) */
+let catalogProducts = null;
+let catalogSource = 'config';
+
+const getCatalogProducts = () => catalogProducts || getConfig().products || [];
+
+const setCatalogProducts = (products, source = 'config') => {
+  catalogProducts = products;
+  catalogSource = source;
+  if (window.HARMONY_LAB_CONFIG) {
+    window.HARMONY_LAB_CONFIG.products = products;
+  }
+};
+
 /**
  * Mensaje de contacto para WhatsApp
  */
@@ -182,15 +196,23 @@ const buildContactMessage = (name, contact, message) => {
  * @param {string} message
  * @returns {string}
  */
-const buildWhatsAppUrl = (message) => {
+const buildWhatsAppUrl = (message, phoneOverride = null) => {
   const { whatsapp } = getConfig().contact;
-  return `https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`;
+  const phone = String(phoneOverride || whatsapp || '').replace(/\D/g, '');
+  if (!phone) return '#';
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 };
 
 /**
  * Mensaje de compra para WhatsApp
  */
 const buildBuyMessage = (product) => {
+  if (product.whatsappMessage && String(product.whatsappMessage).trim()) {
+    return String(product.whatsappMessage)
+      .replace(/\{\{presetName\}\}/g, product.name)
+      .replace(/\{\{name\}\}/g, product.name)
+      .replace(/\{\{platform\}\}/g, product.platform || '');
+  }
   const { brandName } = getConfig().contact;
   return `Hola ${brandName}, me interesa el preset ${product.name} para ${product.platform}.`;
 };
@@ -327,13 +349,16 @@ const renderProductCard = (product, index) => {
  * Renderiza filtros y grid de productos
  */
 const renderCatalog = () => {
-  const { categories, products } = getConfig();
+  const { categories } = getConfig();
+  const products = getCatalogProducts();
   const filtersEl = $('#preset-filters');
   const gridEl    = $('#presets-grid');
 
   if (!filtersEl || !gridEl) return;
 
-  filtersEl.innerHTML = categories.map((cat, i) => `
+  const cats = deriveCategories(products, categories);
+
+  filtersEl.innerHTML = cats.map((cat, i) => `
     <button
       class="filter-btn${i === 0 ? ' filter-btn--active' : ''}"
       data-filter="${cat.id}"
@@ -341,13 +366,39 @@ const renderCatalog = () => {
     >${cat.label}</button>
   `).join('');
 
+  if (!products.length) {
+    gridEl.innerHTML = `
+      <div class="catalog-state catalog-state--empty" role="status">
+        <i class="fas fa-sliders" aria-hidden="true"></i>
+        <p>Pronto publicaremos nuevos presets.</p>
+      </div>
+    `;
+    return;
+  }
+
   gridEl.innerHTML = products.map((p, i) => renderProductCard(p, i)).join('');
+};
+
+const deriveCategories = (products, baseCategories) => {
+  const base = Array.isArray(baseCategories) && baseCategories.length
+    ? baseCategories
+    : [{ id: 'all', label: 'Todos' }];
+  const present = new Set(products.map((p) => p.category).filter(Boolean));
+  return base.filter((c) => c.id === 'all' || present.has(c.id));
+};
+
+const setCatalogStatus = (state, message = '') => {
+  const el = $('#catalog-status');
+  if (!el) return;
+  el.hidden = state === 'ready';
+  el.dataset.state = state;
+  el.textContent = message;
 };
 
 /**
  * Busca producto por ID
  */
-const getProductById = (id) => getConfig().products.find(p => p.id === id);
+const getProductById = (id) => getCatalogProducts().find(p => p.id === id);
 
 /**
  * Renderiza contenido del modal de producto
@@ -392,6 +443,7 @@ const renderProductModal = (product) => {
       ? `<p class="modal-product-price">$${product.price.toFixed(2)} USD</p>`
       : '';
 
+  const waPhone = product.whatsappNumber || null;
   const modalActions = product.free && product.downloadUrl
     ? `
       <a
@@ -403,7 +455,7 @@ const renderProductModal = (product) => {
         <i class="fas fa-download"></i> Descargar gratis en Tone3000
       </a>
       <a
-        href="${buildWhatsAppUrl(buildConsultMessage(product))}"
+        href="${buildWhatsAppUrl(buildConsultMessage(product), waPhone)}"
         class="btn btn--outline btn--full"
         target="_blank"
         rel="noopener noreferrer"
@@ -413,15 +465,15 @@ const renderProductModal = (product) => {
     `
     : `
       <a
-        href="${buildWhatsAppUrl(buildBuyMessage(product))}"
+        href="${buildWhatsAppUrl(buildBuyMessage(product), waPhone)}"
         class="btn btn--whatsapp btn--full"
         target="_blank"
         rel="noopener noreferrer"
       >
-        <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+        <i class="fab fa-whatsapp"></i> Pedir por WhatsApp
       </a>
       <a
-        href="${buildWhatsAppUrl(buildConsultMessage(product))}"
+        href="${buildWhatsAppUrl(buildConsultMessage(product), waPhone)}"
         class="btn btn--outline btn--full"
         target="_blank"
         rel="noopener noreferrer"
@@ -514,15 +566,51 @@ const observeNewRevealElements = (container) => {
 /**
  * Inicializa catálogo, filtros, modal y acciones
  */
-const initCatalog = () => {
-  renderCatalog();
-
+const initCatalog = async () => {
   const grid      = $('#presets-grid');
   const filtersEl = $('#preset-filters');
   const overlay   = $('#product-modal');
   const closeBtn  = $('#product-modal-close');
 
   if (!grid) return;
+
+  setCatalogStatus('loading', 'Cargando catálogo…');
+  grid.innerHTML = `
+    <div class="catalog-state catalog-state--loading" role="status">
+      <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+      <p>Cargando presets…</p>
+    </div>
+  `;
+
+  const fallback = () => {
+    setCatalogProducts(getConfig().products || [], 'config');
+    setCatalogStatus('ready', '');
+    renderCatalog();
+    observeNewRevealElements(grid);
+  };
+
+  try {
+    const HF = window.HarmonyFirebase;
+    if (HF && HF.isConfigured()) {
+      await HF.init();
+      const remote = await HF.fetchPublishedPresets();
+      if (Array.isArray(remote) && remote.length) {
+        setCatalogProducts(remote, 'firestore');
+        setCatalogStatus('ready', '');
+        renderCatalog();
+        observeNewRevealElements(grid);
+      } else {
+        // Firestore vacío → fallback seed local
+        fallback();
+      }
+    } else {
+      fallback();
+    }
+  } catch (err) {
+    console.warn('[HarmonyLab] Catálogo Firestore falló, usando config local.', err?.message || err);
+    setCatalogStatus('error', 'Mostrando catálogo de respaldo.');
+    fallback();
+  }
 
   /* — Filtros — */
   filtersEl?.addEventListener('click', (e) => {
@@ -581,8 +669,6 @@ const initCatalog = () => {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && overlay && !overlay.hidden) closeProductModal();
   });
-
-  observeNewRevealElements(grid);
 };
 
 

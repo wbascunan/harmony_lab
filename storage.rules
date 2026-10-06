@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.keys().hasAny(['admin'])
+        && request.auth.token.admin == true;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/jpeg')
+          || request.resource.contentType.matches('image/png')
+          || request.resource.contentType.matches('image/webp');
+    }
+
+    function underMaxSize() {
+      // 5 MB
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // Imágenes de catálogo: preset-images/{presetId}/{fileName}
+    match /preset-images/{presetId}/{fileName} {
+      allow read: if true;
+
+      allow create, update: if isAdmin()
+        && isImage()
+        && underMaxSize()
+        && fileName.matches('^[a-zA-Z0-9._-]{1,120}$');
+
+      allow delete: if isAdmin();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HarmonyLab Admin</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="icon" type="image/png" href="../assets/images/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="admin.css?v=3" />
+</head>
+<body>
+  <div id="admin-app">
+
+    <!-- LOADING -->
+    <section class="admin-screen" id="screen-loading" aria-live="polite">
+      <div class="admin-card admin-card--narrow">
+        <i class="fas fa-spinner fa-spin admin-spinner" aria-hidden="true"></i>
+        <p>Verificando sesión…</p>
+      </div>
+    </section>
+
+    <!-- LOGIN -->
+    <section class="admin-screen" id="screen-login" hidden>
+      <div class="admin-card admin-card--narrow">
+        <img src="../assets/images/logo.png" alt="Harmony Lab" class="admin-logo" width="72" height="72" />
+        <h1>HarmonyLab Admin</h1>
+        <p class="admin-muted">Acceso exclusivo para administradores.</p>
+        <form id="login-form" novalidate>
+          <label class="admin-label" for="login-email">Correo</label>
+          <input class="admin-input" type="email" id="login-email" autocomplete="username" required />
+          <label class="admin-label" for="login-password">Contraseña</label>
+          <div class="admin-password-wrap">
+            <input class="admin-input" type="password" id="login-password" autocomplete="current-password" required />
+            <button type="button" class="admin-password-toggle" id="login-password-toggle" aria-label="Mostrar contraseña" title="Mostrar contraseña">
+              <i class="fas fa-eye" aria-hidden="true"></i>
+            </button>
+          </div>
+          <p class="admin-error" id="login-error" role="alert" hidden></p>
+          <button type="submit" class="admin-btn admin-btn--primary" id="login-submit">
+            <i class="fas fa-lock"></i> Entrar
+          </button>
+        </form>
+        <p class="admin-hint">No hay registro público. Si no tienes acceso, contacta al dueño del proyecto.</p>
+        <a class="admin-back" href="../index.html">← Volver al sitio</a>
+      </div>
+    </section>
+
+    <!-- NO AUTORIZADO -->
+    <section class="admin-screen" id="screen-denied" hidden>
+      <div class="admin-card admin-card--narrow">
+        <i class="fas fa-ban admin-icon-warn" aria-hidden="true"></i>
+        <h1>Acceso no autorizado</h1>
+        <p class="admin-muted">Tu cuenta no tiene privilegios de administrador.</p>
+        <button type="button" class="admin-btn admin-btn--outline" id="denied-logout">Cerrar sesión</button>
+        <a class="admin-back" href="../index.html">← Volver al sitio</a>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="admin-shell" id="screen-dashboard" hidden>
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar__brand">
+          <img src="../assets/images/logo.png" alt="" width="36" height="36" />
+          <span>HarmonyLab Admin</span>
+        </div>
+        <nav class="admin-nav">
+          <button type="button" class="admin-nav__btn is-active" data-view="home"><i class="fas fa-gauge"></i> Dashboard</button>
+          <button type="button" class="admin-nav__btn" data-view="list"><i class="fas fa-sliders"></i> Presets</button>
+          <button type="button" class="admin-nav__btn" data-view="form" data-new="1"><i class="fas fa-plus"></i> Nuevo preset</button>
+        </nav>
+        <div class="admin-sidebar__foot">
+          <p class="admin-user-email" id="admin-user-email"></p>
+          <button type="button" class="admin-btn admin-btn--ghost" id="admin-logout"><i class="fas fa-right-from-bracket"></i> Salir</button>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        <!-- HOME -->
+        <div class="admin-view" id="view-home">
+          <header class="admin-header">
+            <h2>Dashboard</h2>
+            <button type="button" class="admin-btn admin-btn--primary" data-view="form" data-new="1">
+              <i class="fas fa-plus"></i> Nuevo preset
+            </button>
+          </header>
+          <div class="admin-stats">
+            <div class="admin-stat"><span class="admin-stat__n" id="stat-published">0</span><span>Publicados</span></div>
+            <div class="admin-stat"><span class="admin-stat__n" id="stat-draft">0</span><span>Borradores</span></div>
+            <div class="admin-stat"><span class="admin-stat__n" id="stat-total">0</span><span>Total</span></div>
+          </div>
+          <div class="admin-actions-row">
+            <button type="button" class="admin-btn admin-btn--outline" data-view="list">Administrar presets</button>
+          </div>
+        </div>
+
+        <!-- LIST -->
+        <div class="admin-view" id="view-list" hidden>
+          <header class="admin-header">
+            <h2>Presets</h2>
+            <button type="button" class="admin-btn admin-btn--primary" data-view="form" data-new="1">
+              <i class="fas fa-plus"></i> Nuevo
+            </button>
+          </header>
+          <div class="admin-toolbar">
+            <input type="search" class="admin-input" id="list-search" placeholder="Buscar por nombre…" />
+            <select class="admin-input" id="list-filter-status">
+              <option value="all">Todos los estados</option>
+              <option value="published">Publicados</option>
+              <option value="draft">Borradores</option>
+            </select>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="presets-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Nombre</th>
+                  <th>Precio</th>
+                  <th>Plataforma</th>
+                  <th>Categoría</th>
+                  <th>Estado</th>
+                  <th>Actualizado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="presets-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- FORM -->
+        <div class="admin-view" id="view-form" hidden>
+          <header class="admin-header">
+            <h2 id="form-title">Nuevo preset</h2>
+            <button type="button" class="admin-btn admin-btn--outline" data-view="list">Volver</button>
+          </header>
+          <form id="preset-form" class="admin-form" novalidate>
+            <input type="hidden" id="f-id" />
+            <div class="admin-form-grid">
+              <div class="admin-field">
+                <label for="f-name">Nombre *</label>
+                <input class="admin-input" id="f-name" required maxlength="120" />
+              </div>
+              <div class="admin-field">
+                <label for="f-slug">Slug *</label>
+                <input class="admin-input" id="f-slug" required maxlength="80" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" />
+              </div>
+              <div class="admin-field">
+                <label for="f-platform">Plataforma *</label>
+                <input class="admin-input" id="f-platform" required maxlength="80" />
+              </div>
+              <div class="admin-field">
+                <label for="f-category">Categoría *</label>
+                <select class="admin-input" id="f-category" required>
+                  <option value="gratis">Gratis</option>
+                  <option value="podgo">Pod Go</option>
+                  <option value="zoom">Zoom</option>
+                  <option value="headrush">Headrush</option>
+                  <option value="helix-stadium">Helix Stadium</option>
+                  <option value="helix">Helix LT / Floor / Native / Rack</option>
+                </select>
+              </div>
+              <div class="admin-field">
+                <label for="f-price-mode">Precio</label>
+                <select class="admin-input" id="f-price-mode">
+                  <option value="consult">Consultar</option>
+                  <option value="free">Gratis (0)</option>
+                  <option value="fixed">Precio fijo USD</option>
+                </select>
+              </div>
+              <div class="admin-field" id="f-price-wrap" hidden>
+                <label for="f-price">Monto USD</label>
+                <input class="admin-input" id="f-price" type="number" min="0" step="0.01" />
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="f-short">Descripción corta *</label>
+                <textarea class="admin-input" id="f-short" rows="2" required maxlength="400"></textarea>
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="f-desc">Descripción *</label>
+                <textarea class="admin-input" id="f-desc" rows="5" required maxlength="5000"></textarea>
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="f-includes">Incluye (una línea por ítem)</label>
+                <textarea class="admin-input" id="f-includes" rows="4"></textarea>
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="f-compat">Compatibilidad (una línea por ítem)</label>
+                <textarea class="admin-input" id="f-compat" rows="3"></textarea>
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="f-badges">Badges (coma: worship, ambient, free, nam, gift, ir, premium)</label>
+                <input class="admin-input" id="f-badges" />
+              </div>
+              <div class="admin-field">
+                <label for="f-thumb">Thumb</label>
+                <select class="admin-input" id="f-thumb">
+                  <option value="ambient">ambient</option>
+                  <option value="modulation">modulation</option>
+                  <option value="drive">drive</option>
+                  <option value="worship">worship</option>
+                  <option value="pack">pack</option>
+                  <option value="helix">helix</option>
+                </select>
+              </div>
+              <div class="admin-field">
+                <label for="f-sort">Orden</label>
+                <input class="admin-input" id="f-sort" type="number" min="0" value="0" />
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="f-imageUrl">URL imagen (assets/… o https://…)</label>
+                <input class="admin-input" id="f-imageUrl" />
+                <div class="admin-upload-row">
+                  <input type="file" id="f-imageFile" accept="image/jpeg,image/png,image/webp" />
+                  <button type="button" class="admin-btn admin-btn--outline" id="btn-upload-image">Subir a Storage</button>
+                </div>
+                <img id="f-image-preview" class="admin-preview" alt="" hidden />
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="f-downloadUrl">URL descarga (solo gratis Tone3000, opcional)</label>
+                <input class="admin-input" id="f-downloadUrl" />
+              </div>
+              <div class="admin-field">
+                <label for="f-wa-number">WhatsApp override (vacío = global)</label>
+                <input class="admin-input" id="f-wa-number" placeholder="593998116150" />
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="f-wa-msg">Mensaje WhatsApp (usa {{presetName}})</label>
+                <textarea class="admin-input" id="f-wa-msg" rows="2" placeholder="Hola, quiero comprar el preset &quot;{{presetName}}&quot; que vi en HarmonyLab."></textarea>
+              </div>
+              <div class="admin-field admin-checks">
+                <label><input type="checkbox" id="f-published" /> Publicado</label>
+                <label><input type="checkbox" id="f-featured" /> Destacado</label>
+                <label><input type="checkbox" id="f-free" /> Marcar free</label>
+              </div>
+            </div>
+            <p class="admin-error" id="form-error" role="alert" hidden></p>
+            <p class="admin-success" id="form-success" role="status" hidden></p>
+            <div class="admin-form-actions">
+              <button type="submit" class="admin-btn admin-btn--primary" id="form-save">Guardar</button>
+              <button type="button" class="admin-btn admin-btn--outline" data-view="list">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </section>
+  </div>
+
+  <!-- Confirm delete -->
+  <div class="admin-modal" id="confirm-modal" hidden>
+    <div class="admin-modal__box">
+      <h3>¿Eliminar preset?</h3>
+      <p id="confirm-text">Esta acción no se puede deshacer.</p>
+      <div class="admin-form-actions">
+        <button type="button" class="admin-btn admin-btn--danger" id="confirm-yes">Eliminar</button>
+        <button type="button" class="admin-btn admin-btn--outline" id="confirm-no">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-check-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/firebase-app.js"></script>
+  <script src="admin.js?v=3"></script>
+</body>
+</html>

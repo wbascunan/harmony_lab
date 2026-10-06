@@ -1,0 +1,23 @@
+{
+  "name": "harmony-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Harmony Lab — sitio estático + panel admin Firebase",
+  "scripts": {
+    "set-admin": "node scripts/set-admin.js",
+    "migrate-presets": "node scripts/migrate-presets-to-firestore.js",
+    "migrate-presets:apply": "node scripts/migrate-presets-to-firestore.js --apply",
+    "emulators": "firebase emulators:start --only firestore,storage,auth",
+    "test:rules": "firebase emulators:exec --project harmony-lab-rules-test --only firestore,storage \"node --test tests/firestore.rules.test.js tests/storage.rules.test.js\"",
+    "test": "npm run test:rules"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase": "^11.0.0",
+    "firebase-admin": "^13.0.0",
+    "firebase-tools": "^13.0.0"
+  }
+}
