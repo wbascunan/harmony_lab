@@ -228,9 +228,12 @@ const renderBadges = (badges) => {
 };
 
 /**
- * Formatea precio (null = consultar)
+ * Formatea precio (null = consultar, 0 / free = gratis)
  */
-const formatPrice = (price) => {
+const formatPrice = (price, product = null) => {
+  if (product?.free || price === 0) {
+    return '<span class="preset-price preset-price--free">Gratis</span>';
+  }
   if (price === null || price === undefined) {
     return '<span class="preset-price preset-price--consult">Consultar</span>';
   }
@@ -272,7 +275,16 @@ const renderProductCard = (product, index) => {
   const badgeClass = product.category.startsWith('helix') ? 'preset-badge--helix'
     : product.category === 'headrush' ? 'preset-badge--headrush'
     : product.category === 'zoom' ? 'preset-badge--zoom'
+    : product.category === 'gratis' ? 'preset-badge--free'
     : '';
+
+  const footerAction = product.free && product.downloadUrl
+    ? `<a href="${product.downloadUrl}" class="btn btn--download btn--sm" target="_blank" rel="noopener noreferrer">
+         <i class="fas fa-download"></i> Descargar gratis
+       </a>`
+    : `<button class="btn btn--outline btn--sm" type="button" data-action="detail" data-product-id="${product.id}">
+         Ver detalles
+       </button>`;
 
   return `
     <article
@@ -297,11 +309,14 @@ const renderProductCard = (product, index) => {
         </div>
       </button>
       <div class="preset-card__footer">
-        ${formatPrice(product.price)}
+        ${formatPrice(product.price, product)}
         <div class="preset-card__actions">
-          <button class="btn btn--outline btn--sm" type="button" data-action="detail" data-product-id="${product.id}">
-            Ver detalles
-          </button>
+          ${footerAction}
+          ${product.free ? `
+            <button class="btn btn--outline btn--sm" type="button" data-action="detail" data-product-id="${product.id}">
+              Ver detalles
+            </button>
+          ` : ''}
         </div>
       </div>
     </article>
@@ -371,9 +386,49 @@ const renderProductModal = (product) => {
     `;
   }
 
-  const priceHtml = product.price != null
-    ? `<p class="modal-product-price">$${product.price.toFixed(2)} USD</p>`
-    : '';
+  const priceHtml = product.free || product.price === 0
+    ? `<p class="modal-product-price modal-product-price--free">Gratis</p>`
+    : product.price != null
+      ? `<p class="modal-product-price">$${product.price.toFixed(2)} USD</p>`
+      : '';
+
+  const modalActions = product.free && product.downloadUrl
+    ? `
+      <a
+        href="${product.downloadUrl}"
+        class="btn btn--download btn--full"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <i class="fas fa-download"></i> Descargar gratis en Tone3000
+      </a>
+      <a
+        href="${buildWhatsAppUrl(buildConsultMessage(product))}"
+        class="btn btn--outline btn--full"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <i class="fas fa-comment-dots"></i> Consultar
+      </a>
+    `
+    : `
+      <a
+        href="${buildWhatsAppUrl(buildBuyMessage(product))}"
+        class="btn btn--whatsapp btn--full"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+      </a>
+      <a
+        href="${buildWhatsAppUrl(buildConsultMessage(product))}"
+        class="btn btn--outline btn--full"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <i class="fas fa-comment-dots"></i> Consultar
+      </a>
+    `;
 
   return `
     <div class="modal-product__hero${product.image ? ' modal-product__hero--with-photo' : ''}">
@@ -403,22 +458,7 @@ const renderProductModal = (product) => {
     </div>
 
     <div class="modal-actions modal-actions--product">
-      <a
-        href="${buildWhatsAppUrl(buildBuyMessage(product))}"
-        class="btn btn--whatsapp btn--full"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
-      </a>
-      <a
-        href="${buildWhatsAppUrl(buildConsultMessage(product))}"
-        class="btn btn--outline btn--full"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <i class="fas fa-comment-dots"></i> Consultar
-      </a>
+      ${modalActions}
     </div>
   `;
 };

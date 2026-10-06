@@ -264,6 +264,18 @@ input, textarea { font-family: inherit; }
   transform: translateY(-2px);
 }
 
+.btn--download {
+  background: var(--brand-orange);
+  color: #000;
+  box-shadow: 0 4px 20px rgba(255, 131, 0, 0.35);
+}
+.btn--download:hover {
+  background: var(--brand-orange-dark);
+  color: #000;
+  box-shadow: 0 6px 28px rgba(255, 98, 0, 0.45);
+  transform: translateY(-2px);
+}
+
 
 /* ── 4. ANIMACIONES DE ENTRADA ────────────────────────────── */
 @keyframes fadeUp {
@@ -950,6 +962,8 @@ input, textarea { font-family: inherit; }
 .product-tag--worship { background: rgba(142, 0, 139, 0.2);  color: #c77fd4; border-color: rgba(142, 0, 139, 0.35); }
 .product-tag--ambient { background: rgba(92, 0, 139, 0.2);   color: #b87fd4; border-color: rgba(92, 0, 139, 0.35); }
 .product-tag--premium { background: rgba(255, 131, 0, 0.2);  color: var(--brand-orange); border-color: rgba(255, 131, 0, 0.35); }
+.product-tag--free    { background: rgba(37, 211, 102, 0.18); color: #25D366; border-color: rgba(37, 211, 102, 0.4); }
+.product-tag--nam     { background: rgba(142, 0, 139, 0.2);   color: #c77fd4; border-color: rgba(142, 0, 139, 0.35); }
 
 /* Badge de compatibilidad */
 .preset-badge {
@@ -981,6 +995,11 @@ input, textarea { font-family: inherit; }
   background: rgba(92, 0, 139, 0.15);
   border-color: rgba(92, 0, 139, 0.35);
   color: #c77fd4;
+}
+.preset-badge--free {
+  background: rgba(37, 211, 102, 0.15);
+  border-color: rgba(37, 211, 102, 0.4);
+  color: #25D366;
 }
 .preset-badge--hx {
   background: rgba(0,229,176,0.15);
@@ -1037,6 +1056,7 @@ input, textarea { font-family: inherit; }
 
 .preset-card__actions {
   display: flex;
+  flex-direction: column;
   gap: var(--space-xs);
   width: 100%;
 }
@@ -1053,6 +1073,16 @@ input, textarea { font-family: inherit; }
   color: var(--color-accent);
   font-weight: 700;
   letter-spacing: 0.04em;
+}
+.preset-price--free {
+  font-size: 1.15rem;
+  color: #25D366;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.modal-product-price--free {
+  color: #25D366 !important;
 }
 
 /* Nota informativa */

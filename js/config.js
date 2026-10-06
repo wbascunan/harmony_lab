@@ -96,11 +96,14 @@ const HARMONY_LAB_CONFIG = {
     worship:  { label: 'Worship',         class: 'product-tag--worship' },
     ambient:  { label: 'Ambient',         class: 'product-tag--ambient' },
     premium:  { label: 'Premium',         class: 'product-tag--premium' },
+    free:     { label: 'Gratis',          class: 'product-tag--free' },
+    nam:      { label: 'NAM',             class: 'product-tag--nam' },
   },
 
   /* ── Categorías de filtro ──────────────────────────────── */
   categories: [
     { id: 'all',           label: 'Todos' },
+    { id: 'gratis',        label: 'Gratis' },
     { id: 'podgo',         label: 'Pod Go' },
     { id: 'zoom',          label: 'Zoom' },
     { id: 'headrush',      label: 'Headrush' },
@@ -110,6 +113,70 @@ const HARMONY_LAB_CONFIG = {
 
   /* ── Catálogo de productos ─────────────────────────────── */
   products: [
+
+    /* ─── GRATIS / NAM ─── */
+    {
+      id: 'nam-vemuram-jan-ray',
+      category: 'gratis',
+      platform: 'NAM',
+      name: 'VEMURAM JAN RAY + AMP',
+      shortDesc: 'Captura NAM gratuita del overdrive Vemuram Jan Ray + amp. Full rig con varias etapas de ganancia.',
+      description: 'Captura NAM gratuita de Vemuram Jan Ray + Amp (Matchless DC30). Ideal para pedaleras y plugins que necesitan varias etapas de ganancia. Descarga directa en Tone3000.',
+      includes: [
+        '3 modelos NAM (G7V3, G5V3, G3V3)',
+        'Captura Amp + Cab',
+        'Overdrive boutique cálido',
+        'Descarga gratuita en Tone3000',
+      ],
+      compatibility: [
+        'Neural Amp Modeler (NAM)',
+        'TONE3000 Plugin',
+        'Pedaleras compatibles con NAM',
+      ],
+      badges: ['free', 'nam'],
+      features: [
+        { icon: 'fa-gift',         label: 'Gratis' },
+        { icon: 'fa-wave-square',  label: 'NAM' },
+        { icon: 'fa-sliders',      label: '3 Modelos' },
+        { icon: 'fa-download',     label: 'Descarga' },
+      ],
+      thumb: 'drive',
+      image: 'assets/images/vemuram_jan_ray.png',
+      price: 0,
+      free: true,
+      downloadUrl: 'https://www.tone3000.com/tones/vemuram-jan-ray-amp-75653',
+    },
+    {
+      id: 'nam-vemuram-jan-ray-free',
+      category: 'gratis',
+      platform: 'NAM',
+      name: 'VEMURAM JAN RAY FREE',
+      shortDesc: 'Captura NAM gratuita del pedal Vemuram Jan Ray. Overdrive boutique puro, listo para descargar.',
+      description: 'Captura NAM gratuita del pedal Vemuram Jan Ray (versión solo pedal). Incluye 3 modelos de ganancia (G7V3, G5V3, G3V3). Perfecto para agregar crunch boutique a tu cadena. Descarga directa en Tone3000.',
+      includes: [
+        '3 modelos NAM (G7V3, G5V3, G3V3)',
+        'Captura de pedal (Pedal Capture)',
+        'Overdrive boutique cálido',
+        'Descarga gratuita en Tone3000',
+      ],
+      compatibility: [
+        'Neural Amp Modeler (NAM)',
+        'TONE3000 Plugin',
+        'Pedaleras compatibles con NAM',
+      ],
+      badges: ['free', 'nam'],
+      features: [
+        { icon: 'fa-gift',         label: 'Gratis' },
+        { icon: 'fa-wave-square',  label: 'NAM' },
+        { icon: 'fa-guitar',       label: 'Pedal' },
+        { icon: 'fa-download',     label: 'Descarga' },
+      ],
+      thumb: 'drive',
+      image: 'assets/images/vemuram_jan_ray_free.png',
+      price: 0,
+      free: true,
+      downloadUrl: 'https://www.tone3000.com/tones/vemuram-jan-ray-free-75639',
+    },
 
     /* ─── POD GO ─── */
     {
